@@ -132,7 +132,26 @@ Discount approval thresholds are a table keyed by role
 (`discount_approval_thresholds`), not hardcoded, so the owner can
 change them without a deployment.
 
-## 8. Open items deferred to their phase
+## 8. Patient numbering & duplicate merge
+
+- **UHID is sequential per branch**: `{branch.code}-{sequence:06d}`
+  (e.g. `RDC1-000001`), generated via `branch_patient_sequences`
+  (row-locked `UPDATE ... RETURNING` in the same transaction as the
+  patient insert — safe under concurrent registrations).
+- **Duplicate registrations are merged, never deleted.** A duplicate
+  patient record is common at a busy reception desk. Deleting one and
+  repointing history by hand is exactly the kind of thing that quietly
+  corrupts financial/clinical history, so it's a first-class,
+  audited operation instead: `patient_merges` records who merged what
+  into what and why; the merge transaction re-points
+  `appointments`/`bills`/`payments`/`treatment_plans` from the
+  duplicate to the surviving record, marks the duplicate
+  `status = 'merged'`, and logs every repointed row to `audit_log`.
+  The old UHID keeps resolving (via `merged_into_patient_id`) since
+  physical paperwork and old receipts reference it. Restricted to
+  admin/owner.
+
+## 9. Open items deferred to their phase
 
 - Detailed permission matrix per role (Phase 3).
 - Lab work tracking schema, inventory, recall reminders — noted as

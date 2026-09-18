@@ -13,11 +13,22 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;     -- gen_random_uuid()
 
 CREATE TABLE branches (
     id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    code            text UNIQUE NOT NULL,     -- short prefix used in UHIDs, e.g. 'RDC1'
     name            text NOT NULL,
     address         text,
     phone           text,
     is_active       boolean NOT NULL DEFAULT true,
     created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+-- Backs sequential-per-branch UHID generation (patients.uhid = '{code}-{n:06d}').
+-- A plain UPDATE ... RETURNING inside the same transaction as the patient
+-- INSERT is atomic under concurrent registrations (row lock on this table),
+-- so two receptionists registering at the same branch at the same second
+-- still get distinct, gap-tolerant sequence numbers.
+CREATE TABLE branch_patient_sequences (
+    branch_id       uuid PRIMARY KEY REFERENCES branches(id),
+    last_patient_no integer NOT NULL DEFAULT 0
 );
 
 -- A physical room; a room has a type that governs which procedures may be
@@ -132,10 +143,39 @@ CREATE TABLE patients (
     address             text,
     referred_by         text,
     created_by          uuid REFERENCES users(id),
-    created_at          timestamptz NOT NULL DEFAULT now()
+    created_at          timestamptz NOT NULL DEFAULT now(),
+
+    -- Duplicate-registration handling: a duplicate is never deleted (every
+    -- appointment/bill/payment it's linked to must stay attributable), it's
+    -- merged. 'merged' patients are excluded from search/booking but their
+    -- UHID keeps resolving (old receipts, old paperwork) via merged_into.
+    status              text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'merged')),
+    merged_into_patient_id uuid REFERENCES patients(id),
+    CHECK (status = 'active' OR merged_into_patient_id IS NOT NULL)
 );
 -- Patients are shared across branches by design (§2 of ARCHITECTURE.md) —
 -- a patient registered at one branch can be booked/billed at another.
+
+-- A formal, audited merge of a duplicate patient record into the surviving
+-- one. The merge operation (application-level, admin/owner only) runs as a
+-- single transaction that:
+--   1. Re-points appointments.patient_id, bills.patient_id, payments.patient_id,
+--      and treatment_plans.patient_id from source -> target.
+--   2. Sets patients.status = 'merged' and merged_into_patient_id on the source.
+--   3. Inserts this row, plus an audit_log entry per repointed row (old/new
+--      patient_id), so the merge is fully reconstructable later.
+-- This is NOT a silent edit: bill_items/payments amounts are untouched
+-- (append-only, per §5) — only *whose* patient a bill/appointment belongs
+-- to changes, and that change itself is logged, not overwritten in place.
+CREATE TABLE patient_merges (
+    id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    source_patient_id   uuid NOT NULL REFERENCES patients(id),
+    target_patient_id   uuid NOT NULL REFERENCES patients(id),
+    reason              text NOT NULL,
+    merged_by           uuid NOT NULL REFERENCES users(id),
+    merged_at           timestamptz NOT NULL DEFAULT now(),
+    CHECK (source_patient_id != target_patient_id)
+);
 
 -- =====================================================================
 -- 4. PROCEDURES & RATES
