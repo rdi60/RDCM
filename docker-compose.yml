@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rdcm}
+      POSTGRES_USER: ${POSTGRES_USER:-rdcm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rdcm}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rdcm}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      # Exposed on the LAN so terminals could, if ever needed, connect
+      # directly for reporting tools; remove if that's not wanted.
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?set a real secret key in .env}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-false}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
+      POSTGRES_DB: ${POSTGRES_DB:-rdcm}
+      POSTGRES_USER: ${POSTGRES_USER:-rdcm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rdcm}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+    volumes:
+      - static_files:/app/staticfiles
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
+  static_files:

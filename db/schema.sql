@@ -233,9 +233,15 @@ CREATE TABLE appointments (
     start_time          timestamptz NOT NULL,
     end_time             timestamptz NOT NULL,
     buffer_minutes       integer NOT NULL DEFAULT 10,
-    -- Generated column: the chair is reserved until end_time + buffer.
-    -- Doctor exclusion (below) uses end_time directly, with no buffer.
-    blocked_until        timestamptz GENERATED ALWAYS AS (end_time + make_interval(mins => buffer_minutes)) STORED,
+    -- The chair is reserved until end_time + buffer; doctor exclusion (below)
+    -- uses end_time directly, with no buffer. This can't be a Postgres
+    -- GENERATED column: timestamptz + interval is STABLE, not IMMUTABLE
+    -- (interval arithmetic is timezone-dependent), which Postgres rejects
+    -- for generated columns. A BEFORE INSERT/UPDATE trigger sets it instead
+    -- (see trg_set_blocked_until below) — that runs before the NOT NULL and
+    -- EXCLUDE constraints are checked, so it's just as reliable, and it
+    -- guarantees correctness regardless of what the application sends.
+    blocked_until        timestamptz NOT NULL,
 
     status              text NOT NULL DEFAULT 'scheduled'
                             CHECK (status IN ('scheduled', 'checked_in', 'in_progress',
@@ -259,16 +265,27 @@ CREATE TABLE appointments (
     -- Both are enforced here, at the database level, independent of the UI
     -- or application code — this is what makes it safe under concurrent
     -- receptionists booking in the same second.
-    EXCLUDE USING gist (
+    CONSTRAINT appointments_chair_excl EXCLUDE USING gist (
         chair_id WITH =,
         tstzrange(start_time, blocked_until) WITH &&
     ) WHERE (status NOT IN ('cancelled', 'no_show')),
 
-    EXCLUDE USING gist (
+    CONSTRAINT appointments_doctor_excl EXCLUDE USING gist (
         doctor_id WITH =,
         tstzrange(start_time, end_time) WITH &&
     ) WHERE (status NOT IN ('cancelled', 'no_show'))
 );
+
+CREATE OR REPLACE FUNCTION set_appointment_blocked_until() RETURNS trigger AS $$
+BEGIN
+    NEW.blocked_until := NEW.end_time + (NEW.buffer_minutes * interval '1 minute');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_set_blocked_until
+    BEFORE INSERT OR UPDATE OF end_time, buffer_minutes ON appointments
+    FOR EACH ROW EXECUTE FUNCTION set_appointment_blocked_until();
 
 CREATE INDEX idx_appointments_branch_start ON appointments (branch_id, start_time);
 CREATE INDEX idx_appointments_doctor_start ON appointments (doctor_id, start_time);
