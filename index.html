@@ -3,34 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Raja Dental Clinic — Dr. Gunaseelan Rajan</title>
-<meta name="description" content="Raja Dental Clinic — gentle, modern dental care with Dr. Gunaseelan Rajan.">
+<title>Dr. Gunaseelan Rajan — Oral & Maxillofacial Surgeon</title>
+<meta name="description" content="Dr. Gunaseelan Rajan — Oral & Maxillofacial Surgeon, Medical Director of Rajan Dental Hospital, Chennai. Profile, publications, conferences and awards.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<!--
-  CONTENT TO REPLACE BEFORE LAUNCH (search for [BRACKETS] throughout this file):
-  - Hero / about copy, doctor bio, qualifications
-  - Clinic address, phone number, email, map embed
-  - Patient testimonial + name
-  - Photos (currently placeholder boxes with alt text describing the intended image)
-  - Social links in the footer
--->
 
 <a class="skip-link" href="#main">Skip to content</a>
 
 <header class="site-header">
   <div class="nav-wrap">
-    <a class="brand" href="#home">Raja Dental</a>
+    <a class="brand" href="#home">Dr. Gunaseelan Rajan</a>
     <nav class="nav-links" id="nav-links">
-      <a href="#home">Home</a>
-      <a href="#about">About</a>
-      <a href="#services">Services</a>
-      <a href="#contact">Contact</a>
-      <a class="btn btn-gradient btn-small" href="#contact">Book Appointment</a>
+      <a href="#profile">Profile</a>
+      <a href="#publications">Publications</a>
+      <a href="#conferences">Conferences</a>
+      <a href="#awards">Awards</a>
+      <a class="btn btn-gradient btn-small" href="#contact">Contact</a>
     </nav>
     <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
       <span></span><span></span><span></span>
@@ -44,146 +36,110 @@
   <section id="home" class="hero">
     <div class="hero-glow" aria-hidden="true"></div>
     <div class="section-inner hero-inner">
-      <span class="eyebrow eyebrow-cyan">MEET YOUR NEW FAVORITE DENTIST</span>
-      <h1 class="hero-title">Dental care in <span class="grad-text">full color</span></h1>
-      <p class="hero-sub">[Intro copy from drgunaseelanrajan.com — Dr. Gunaseelan Rajan's approach to vibrant, modern dental care.]</p>
+      <span class="eyebrow eyebrow-cyan" id="hero-eyebrow"></span>
+      <h1 class="hero-title" id="hero-headline"></h1>
+      <p class="hero-sub" id="hero-role"></p>
       <div class="hero-actions">
-        <a class="btn btn-gradient" href="#contact">Book an Appointment</a>
-        <a class="btn btn-outline" href="tel:+91XXXXXXXXXX">[Clinic Phone Number]</a>
+        <a class="btn btn-gradient" href="#publications">View Publications</a>
+        <a class="btn btn-outline" href="#contact">Contact</a>
       </div>
-      <div class="hero-photo-frame">
-        <div class="hero-photo" role="img" aria-label="Photo of Dr. Gunaseelan Rajan">
-          <span>[Photo — Dr. Gunaseelan Rajan]</span>
-        </div>
-      </div>
+      <div class="hero-photo-frame" id="hero-photo-frame"></div>
     </div>
   </section>
 
-  <!-- ABOUT -->
-  <section id="about" class="section">
-    <div class="section-inner">
-      <div class="card about-card reveal">
-        <div class="about-photo" role="img" aria-label="Portrait of Dr. Gunaseelan Rajan">
-          <span>[Portrait — Dr. Gunaseelan Rajan]</span>
-        </div>
-        <div class="about-copy">
-          <span class="eyebrow eyebrow-orange">ABOUT THE DOCTOR</span>
-          <h2>Dr. Gunaseelan Rajan, BDS, MDS</h2>
-          <p>[Bio from drgunaseelanrajan.com — training, focus areas and approach to patient care.]</p>
-          <div class="chip-row">
-            <span class="chip chip-violet">18+ years</span>
-            <span class="chip chip-magenta">12,000+ patients</span>
-            <span class="chip chip-cyan">4.9 &#9733; rated</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SERVICES -->
-  <section id="services" class="section">
+  <!-- PROFILE -->
+  <section id="profile" class="section">
     <div class="section-inner">
       <div class="section-head reveal">
-        <h2>Every treatment, all in color</h2>
-        <p>Comprehensive dental care, never dull.</p>
+        <h2>Profile</h2>
       </div>
-      <div class="services-grid">
-        <article class="service-card reveal" style="--accent:#8B5CF6">
-          <span class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7l7-4z"/><path d="M9 12l2 2 4-4"/></svg>
-          </span>
-          <h3>General &amp; Preventive</h3>
-          <p>Checkups, cleanings and cavity care.</p>
-        </article>
-        <article class="service-card reveal" style="--accent:#EC4899">
-          <span class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/></svg>
-          </span>
-          <h3>Cosmetic Dentistry</h3>
-          <p>Whitening, veneers, smile makeovers.</p>
-        </article>
-        <article class="service-card reveal" style="--accent:#FB923C">
-          <span class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><line x1="12" y1="4" x2="12" y2="20"/><line x1="4" y1="12" x2="20" y2="12"/></svg>
-          </span>
-          <h3>Dental Implants</h3>
-          <p>Natural-looking, permanent replacements.</p>
-        </article>
-        <article class="service-card reveal" style="--accent:#22D3EE">
-          <span class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A12" stroke-width="1.8"><path d="M12 21s-7-4.5-9.5-9C.8 8 2 4.5 5.5 4 8 3.6 10 5 12 7c2-2 4-3.4 6.5-3 3.5.5 4.7 4 3 8-2.5 4.5-9.5 9-9.5 9z"/></svg>
-          </span>
-          <h3>Root Canal Treatment</h3>
-          <p>Precise, low-discomfort care.</p>
-        </article>
-        <article class="service-card reveal" style="--accent:#8B5CF6">
-          <span class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 13c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5"/></svg>
-          </span>
-          <h3>Pediatric Dentistry</h3>
-          <p>A friendly first visit for little smiles.</p>
-        </article>
-        <article class="service-card reveal" style="--accent:#EC4899">
-          <span class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="16" x2="16" y2="16"/></svg>
-          </span>
-          <h3>Orthodontics</h3>
-          <p>Braces and clear aligners, all ages.</p>
-        </article>
+      <div class="card about-card reveal">
+        <div class="about-copy">
+          <p id="profile-bio"></p>
+          <div class="stat-row" id="profile-stats"></div>
+        </div>
+      </div>
+
+      <div class="card hospital-card reveal">
+        <img class="hospital-photo" id="hospital-photo" alt="">
+        <div class="hospital-copy">
+          <span class="eyebrow eyebrow-orange">THE HOSPITAL</span>
+          <h3 id="hospital-name"></h3>
+          <p id="hospital-location"></p>
+          <p id="hospital-description"></p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- WHY CHOOSE US -->
-  <section class="section">
-    <div class="section-inner why-grid">
-      <div class="why-card reveal">
-        <h3 class="why-title" style="color:#C4B5FD">Comfort-first care</h3>
-        <p>A calm space, unhurried appointments.</p>
-      </div>
-      <div class="why-card reveal">
-        <h3 class="why-title" style="color:#F9A8D4">Modern &amp; sterile</h3>
-        <p>Digital imaging, hospital-grade hygiene.</p>
-      </div>
-      <div class="why-card reveal">
-        <h3 class="why-title" style="color:#A5F3FC">Transparent pricing</h3>
-        <p>Clear costs, no pressure ever.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- TESTIMONIAL -->
-  <section class="section testimonial-section">
+  <!-- PUBLICATIONS -->
+  <section id="publications" class="section">
     <div class="section-inner">
-      <blockquote class="testimonial-card reveal">
-        <p class="stars" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</p>
-        <p class="testimonial-quote">"[Pull a short patient testimonial from drgunaseelanrajan.com's reviews here.]"</p>
-        <footer>— [Patient Name]</footer>
-      </blockquote>
+      <div class="section-head reveal">
+        <h2>Publications</h2>
+        <p>Peer-reviewed research in oral & maxillofacial surgery and implantology.</p>
+      </div>
+      <div class="tabs reveal" role="tablist" aria-label="Publications">
+        <button class="tab-btn active" data-tab="pub-international" role="tab" aria-selected="true">International</button>
+        <button class="tab-btn" data-tab="pub-national" role="tab" aria-selected="false">National</button>
+      </div>
+      <ol class="list-panel" id="pub-international" role="tabpanel"></ol>
+      <ol class="list-panel" id="pub-national" role="tabpanel" hidden></ol>
     </div>
   </section>
 
-  <!-- CONTACT / CTA -->
+  <!-- CONFERENCES -->
+  <section id="conferences" class="section">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <h2>Conferences & Workshops</h2>
+        <p>Invited lectures and surgical workshops, in India and abroad.</p>
+      </div>
+      <div class="tabs reveal" role="tablist" aria-label="Conferences">
+        <button class="tab-btn active" data-tab="conf-international" role="tab" aria-selected="true">International — Invited Speaker</button>
+        <button class="tab-btn" data-tab="conf-national" role="tab" aria-selected="false">National — Invited Speaker</button>
+        <button class="tab-btn" data-tab="conf-workshops" role="tab" aria-selected="false">Workshops Organized</button>
+      </div>
+      <ol class="list-panel event-list" id="conf-international" role="tabpanel"></ol>
+      <ol class="list-panel event-list" id="conf-national" role="tabpanel" hidden></ol>
+      <ol class="list-panel event-list" id="conf-workshops" role="tabpanel" hidden></ol>
+    </div>
+  </section>
+
+  <!-- AWARDS -->
+  <section id="awards" class="section">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <h2>Awards & Achievements</h2>
+      </div>
+
+      <div class="award-highlights reveal" id="award-recognitions"></div>
+
+      <div class="award-columns reveal">
+        <div>
+          <h3 class="subhead">Leadership & Professional Positions</h3>
+          <ul class="role-list" id="award-positions"></ul>
+        </div>
+        <div>
+          <h3 class="subhead">Examinerships</h3>
+          <ul class="role-list" id="award-examinerships"></ul>
+        </div>
+        <div>
+          <h3 class="subhead">Teaching</h3>
+          <ul class="role-list" id="award-teaching"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
   <section id="contact" class="section">
     <div class="section-inner">
       <div class="cta-banner reveal">
-        <h2>Ready for a smile in full color?</h2>
-        <a class="btn btn-solid-light" href="tel:+91XXXXXXXXXX">Book Your Visit</a>
+        <h2>Get in touch</h2>
+        <a class="btn btn-solid-light" id="contact-email-btn" href="#">Email</a>
       </div>
-      <div class="contact-grid reveal">
-        <div class="contact-item">
-          <h3>Visit us</h3>
-          <p>[Clinic Address — street, city, PIN code]</p>
-        </div>
-        <div class="contact-item">
-          <h3>Call or WhatsApp</h3>
-          <p><a href="tel:+91XXXXXXXXXX">[Phone Number]</a></p>
-        </div>
-        <div class="contact-item">
-          <h3>Email</h3>
-          <p><a href="mailto:info@rajandental.com">info@rajandental.com</a></p>
-        </div>
-      </div>
+      <p class="contact-note" id="contact-note"></p>
     </div>
   </section>
 
@@ -191,15 +147,14 @@
 
 <footer class="site-footer">
   <div class="section-inner footer-inner">
-    <span class="brand">Raja Dental Clinic</span>
+    <span class="brand" id="footer-name"></span>
     <div class="footer-links">
-      <span>[Clinic Address]</span>
-      <span>[Phone Number]</span>
-      <span>&copy; <span id="year"></span> Raja Dental Clinic</span>
+      <span>&copy; <span id="year"></span></span>
     </div>
   </div>
 </footer>
 
+<script src="data/content.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
