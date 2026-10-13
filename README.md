@@ -5,8 +5,9 @@ appointment scheduling across chairs/OTs, billing (invoices & receipts),
 inventory, and links out to HRMS and the patient queue board.
 
 Built with Django + PostgreSQL. See the project roadmap for the full phase
-plan; this repo currently covers **Phase 0 — foundations**:
+plan; this repo currently covers:
 
+**Phase 0 — foundations**
 - Custom user model (`accounts.User`), ready for later per-role profiles
   (Doctor, Employee, ...) to extend
 - Default role groups (Clinic Admin, Doctor, Receptionist, Accountant,
@@ -16,6 +17,17 @@ plan; this repo currently covers **Phase 0 — foundations**:
   wired up as the back-office screen for user/role management
 - Docker Compose setup (Django/Gunicorn + PostgreSQL + Nginx) for deploying
   to a VPS
+
+**Phase 1 — admin core** (`clinic` app)
+- Doctor enrollment: name, registration number, specialties, consultation
+  fee, and multiple degrees/qualifications per doctor (inline on the admin
+  form) — a doctor doesn't need a login account to be enrolled
+- Chairs & OTs as bookable `Resource` records, seeded via
+  `manage.py seed_resources` (defaults to your 16 chairs + 2 OTs, flags
+  let you change the counts)
+- Treatment price catalog (name, category, default duration, price)
+- All managed through Django Admin; the dashboard's "Clinic setup" section
+  (staff only) links straight to each changelist
 
 ## Running locally
 
@@ -31,6 +43,7 @@ cp .env.example .env   # then edit DJANGO_SECRET_KEY and the POSTGRES_* values
 
 python manage.py migrate
 python manage.py seed_roles
+python manage.py seed_resources   # creates Chair 1-16 and OT 1-2
 python manage.py createsuperuser
 python manage.py runserver
 ```
@@ -56,6 +69,7 @@ runs migrations and `seed_roles` automatically on every start.
 ```
 config/            Django settings (base/dev/prod), root URLs, WSGI/ASGI
 accounts/          Custom user model, role groups, Django Admin customization
+clinic/            Doctors, specialties, qualifications, chairs/OTs, treatments
 core/              Dashboard shell, clinic-wide template context
 templates/, static/  Shared templates and CSS
 docker/, nginx/    Deployment: entrypoint script, Nginx reverse-proxy config

@@ -4,6 +4,18 @@
 <h1 style="margin-bottom:4px">Welcome, {{ user.get_full_name|default:user.username }}</h1>
 <p style="color:var(--fg-muted);margin-top:0">{{ clinic_name }} clinic management — Phase 0 foundations.</p>
 
+{% if setup_links %}
+<h2 style="font-size:1rem;margin-bottom:8px">Clinic setup</h2>
+<div class="module-grid" style="margin-top:0;margin-bottom:20px">
+  {% for label, url in setup_links %}
+  <a class="module-card" href="{{ url }}" style="text-decoration:none;color:inherit;display:block">
+    <strong>{{ label }}</strong>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<h2 style="font-size:1rem;margin-bottom:8px">Modules</h2>
 <div class="module-grid">
   {% for m in modules %}
   <div class="module-card">
