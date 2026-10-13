@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ invoice.invoice_number|default:"Draft invoice" }} · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ invoice.invoice_number|default:"Draft invoice" }}</h1>
+    <p class="note-muted">
+      <a href="{% url 'patient_detail' invoice.patient.pk %}">{{ invoice.patient.full_name }}</a> · {{ invoice.patient.uhid }}
+      {% if invoice.appointment %} · <a href="{% url 'appointment_detail' invoice.appointment.pk %}">appointment on {{ invoice.appointment.start_time|date:"d M Y" }}</a>{% endif %}
+    </p>
+  </div>
+  <span class="pill status-{{ invoice.status }}" style="font-size:.85rem;padding:6px 14px">{{ invoice.get_status_display }}</span>
+</div>
+
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+  <a class="btn" href="{% url 'invoice_print' invoice.pk %}" target="_blank">Print invoice</a>
+  {% if invoice.status == 'draft' %}
+  <form method="post"><input type="hidden" name="action" value="issue">{% csrf_token %}<button type="submit" class="btn btn-primary">Issue invoice</button></form>
+  {% endif %}
+  {% if invoice.status == 'draft' or invoice.status == 'issued' %}
+  <form method="post" onsubmit="return confirm('Void this invoice?');"><input type="hidden" name="action" value="void">{% csrf_token %}<button type="submit" class="btn btn-danger">Void</button></form>
+  {% endif %}
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Item</th><th>Qty</th><th>Unit price</th><th>Line total</th>{% if invoice.status == 'draft' %}<th></th>{% endif %}</tr></thead>
+  <tbody>
+    {% for item in invoice.line_items.all %}
+    <tr>
+      <td>{{ item.description }}</td>
+      <td>{{ item.quantity }}</td>
+      <td>₹{{ item.unit_price }}</td>
+      <td>₹{{ item.line_total }}</td>
+      {% if invoice.status == 'draft' %}
+      <td>
+        <form method="post" action="{% url 'invoice_remove_item' invoice.pk item.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+        </form>
+      </td>
+      {% endif %}
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="note-muted">No line items yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% if invoice.status == 'draft' %}
+<h2 style="font-size:1rem;margin-top:20px">Add item</h2>
+<form method="post" class="stacked-form" style="max-width:480px">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="add_item">
+  {% for field in line_item_form %}
+  <div class="field">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  <button type="submit" class="btn">Add item</button>
+</form>
+{% endif %}
+
+<div class="module-card" style="max-width:360px;margin-top:20px">
+  <p><strong>Subtotal:</strong> ₹{{ invoice.subtotal }}</p>
+  <p><strong>Discount:</strong> ₹{{ invoice.discount }}</p>
+  <p><strong>Tax ({{ invoice.tax_percent }}%):</strong> ₹{{ invoice.tax_amount }}</p>
+  <p><strong>Total:</strong> ₹{{ invoice.total }}</p>
+  <p><strong>Paid:</strong> ₹{{ invoice.paid_amount }}</p>
+  <p><strong>Balance due:</strong> ₹{{ invoice.balance_due }}</p>
+</div>
+
+<h2 style="font-size:1rem;margin-top:24px">Payments</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Receipt #</th><th>Amount</th><th>Mode</th><th>Date</th><th></th></tr></thead>
+  <tbody>
+    {% for p in invoice.payments.all %}
+    <tr>
+      <td>{{ p.receipt_number }}</td>
+      <td>₹{{ p.amount }}</td>
+      <td>{{ p.get_mode_display }}</td>
+      <td>{{ p.paid_at|date:"d M Y, H:i" }}</td>
+      <td><a class="btn btn-sm" href="{% url 'payment_print' p.pk %}" target="_blank">Print receipt</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="note-muted">No payments recorded yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% if invoice.status == 'issued' or invoice.status == 'partially_paid' %}
+<h2 style="font-size:1rem;margin-top:20px">Record payment</h2>
+<form method="post" class="stacked-form" style="max-width:360px">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="record_payment">
+  {% for field in payment_form %}
+  <div class="field">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  {% if payment_form.non_field_errors %}<div class="field-error">{{ payment_form.non_field_errors|striptags }}</div>{% endif %}
+  <button type="submit" class="btn btn-primary">Record payment</button>
+</form>
+{% endif %}
+{% endblock %}

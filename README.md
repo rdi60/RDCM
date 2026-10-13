@@ -45,6 +45,27 @@ plan; this repo currently covers:
   cancelled/no-show) enforced through an explicit allowed-transitions table
   so a stray request can't skip straight from "scheduled" to "completed"
 
+**Phase 4 — billing** (`billing` app)
+- Invoices: draft → issued → partially paid/paid, or void. Draft invoices
+  hold editable line items (free-text or linked to a `Treatment`); "+ Create
+  invoice" from a completed appointment auto-adds its treatment as the first
+  line item
+- Numbered invoices (`INV-00001`) and receipts (`RCT-00001`), same
+  auto-numbering pattern as the patient UHID
+- Payments: cash/card/UPI/cheque/insurance, full or partial, with the
+  invoice's status recomputed automatically — rejected server-side
+  (`Payment.clean()`) if it would overpay the invoice or land on a
+  draft/void invoice, not just hidden in the UI
+- Voiding is blocked once any payment exists, so a paid invoice can't be
+  erased from the record (no refund/credit-note flow yet — a real gap to
+  revisit if you need one)
+- Print-friendly invoice and receipt pages (clinic letterhead, line items,
+  totals) for browser print-to-PDF or paper — no PDF-generation library
+  added, since WeasyPrint-style tools need extra system packages that
+  complicate the Docker build for not much benefit over a print stylesheet
+- Outstanding dues report: every unpaid/partially-paid invoice with its
+  balance, plus a running total
+
 ## Running locally
 
 Requires Python 3.12+ and a PostgreSQL server.
@@ -87,10 +108,11 @@ config/            Django settings (base/dev/prod), root URLs, WSGI/ASGI
 accounts/          Custom user model, role groups, Django Admin customization
 clinic/            Doctors, specialties, qualifications, chairs/OTs, treatments
 scheduling/        Patients, appointments, the day/week calendar grid
+billing/           Invoices, line items, payments, print pages, dues report
 core/              Dashboard shell, clinic-wide template context
 templates/, static/  Shared templates and CSS
 docker/, nginx/    Deployment: entrypoint script, Nginx reverse-proxy config
 ```
 
-Each later phase (billing, inventory, MIS reports) adds its own Django app
-alongside the existing ones, following the same pattern.
+Each later phase (inventory, MIS reports) adds its own Django app alongside
+the existing ones, following the same pattern.

@@ -178,6 +178,12 @@ tbody tr:hover { background: var(--neutral-soft); }
 .status-arrived, .status-in_chair { background: var(--warn-soft); color: var(--warn); }
 .status-completed { background: var(--good-soft); color: var(--good); }
 .status-cancelled, .status-no_show { background: var(--bad-soft); color: var(--bad); }
+.status-draft { background: var(--neutral-soft); color: var(--fg-muted); }
+.status-issued, .status-partially_paid { background: var(--warn-soft); color: var(--warn); }
+.status-paid { background: var(--good-soft); color: var(--good); }
+.status-void { background: var(--bad-soft); color: var(--bad); }
+
+.btn-sm { padding: 4px 10px; font-size: .78rem; border-radius: 7px; }
 
 /* ---- calendar: day-view resource grid ---- */
 .cal-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }

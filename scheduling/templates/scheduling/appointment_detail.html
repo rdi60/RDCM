@@ -24,6 +24,14 @@
 </div>
 {% endif %}
 
+<h2 style="font-size:1rem;margin-top:24px">Billing</h2>
+{% for inv in appt.invoices.all %}
+<p><a href="{% url 'invoice_detail' inv.pk %}">{{ inv.invoice_number }}</a> — <span class="pill status-{{ inv.status }}">{{ inv.get_status_display }}</span> — ₹{{ inv.total }}, balance ₹{{ inv.balance_due }}</p>
+{% empty %}
+<p class="note-muted">No invoice yet for this appointment.</p>
+{% endfor %}
+<a class="btn btn-primary" href="{% url 'invoice_create' %}?appointment={{ appt.pk }}">+ Create invoice</a>
+
 {% if can_reschedule %}
 <h2 style="font-size:1rem;margin-top:24px">Reschedule</h2>
 <form method="post" class="stacked-form" style="max-width:480px">

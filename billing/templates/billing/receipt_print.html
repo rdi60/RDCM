@@ -1,0 +1,43 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ payment.receipt_number }} · {{ clinic_name }}</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #231A14; max-width: 520px; margin: 40px auto; padding: 0 20px; }
+  .letterhead { border-bottom: 2px solid #231A14; padding-bottom: 14px; margin-bottom: 20px; }
+  .letterhead h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .num { font-weight: 700; font-size: 1.1rem; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: .92rem; }
+  td { padding: 6px 0; border-bottom: 1px solid #eee; }
+  td:first-child { color: #666; width: 40%; }
+  .amount { font-size: 1.4rem; font-weight: 700; margin: 16px 0; }
+  .print-btn {
+    margin-top: 24px; padding: 9px 18px; border-radius: 8px; border: 1px solid #FF6A1A;
+    background: #FF6A1A; color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  @media print { .print-btn { display: none; } body { margin: 0; } }
+</style>
+</head>
+<body>
+  <div class="letterhead">
+    <h1>{{ clinic_name }}</h1>
+    <div>Payment receipt</div>
+    <div class="num">{{ payment.receipt_number }}</div>
+  </div>
+
+  <div class="amount">₹{{ payment.amount }}</div>
+
+  <table>
+    <tr><td>Received from</td><td>{{ payment.invoice.patient.full_name }} ({{ payment.invoice.patient.uhid }})</td></tr>
+    <tr><td>Against invoice</td><td>{{ payment.invoice.invoice_number }}</td></tr>
+    <tr><td>Mode</td><td>{{ payment.get_mode_display }}</td></tr>
+    <tr><td>Date</td><td>{{ payment.paid_at|date:"d M Y, H:i" }}</td></tr>
+    {% if payment.received_by %}<tr><td>Received by</td><td>{{ payment.received_by }}</td></tr>{% endif %}
+    {% if payment.notes %}<tr><td>Notes</td><td>{{ payment.notes }}</td></tr>{% endif %}
+    <tr><td>Invoice balance after this payment</td><td>₹{{ payment.invoice.balance_due }}</td></tr>
+  </table>
+
+  <button class="print-btn" onclick="window.print()">Print</button>
+</body>
+</html>

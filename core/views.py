@@ -8,7 +8,7 @@ from django.urls import reverse
 MODULES = [
     {"name": "Appointments", "phase": "Phase 2", "available": True, "url_name": "calendar"},
     {"name": "Patients", "phase": "Phase 2", "available": True, "url_name": "patient_list"},
-    {"name": "Billing", "phase": "Phase 4", "available": False},
+    {"name": "Billing", "phase": "Phase 4", "available": True, "url_name": "invoice_list"},
     {"name": "Inventory", "phase": "Phase 5", "available": False},
     {"name": "MIS Reports", "phase": "Phase 6", "available": False},
 ]

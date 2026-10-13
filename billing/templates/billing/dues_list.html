@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Outstanding dues · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Outstanding dues</h1>
+  <a class="btn" href="{% url 'invoice_list' %}">All invoices</a>
+</div>
+
+<div class="kpis" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:420px;margin-bottom:16px">
+  <div class="module-card">
+    <div class="status">Invoices with a balance</div>
+    <div style="font-size:1.6rem;font-weight:700">{{ rows|length }}</div>
+  </div>
+  <div class="module-card">
+    <div class="status">Total outstanding</div>
+    <div style="font-size:1.6rem;font-weight:700;color:var(--bad)">₹{{ total_due }}</div>
+  </div>
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Invoice #</th><th>Patient</th><th>Phone</th><th>Status</th><th>Balance due</th></tr></thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td><a href="{% url 'invoice_detail' row.invoice.pk %}">{{ row.invoice.invoice_number }}</a></td>
+      <td>{{ row.invoice.patient.full_name }}</td>
+      <td>{{ row.invoice.patient.phone }}</td>
+      <td><span class="pill status-{{ row.invoice.status }}">{{ row.invoice.get_status_display }}</span></td>
+      <td>₹{{ row.due }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="note-muted">No outstanding dues. Everything is settled.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
