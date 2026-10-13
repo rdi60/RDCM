@@ -1,10 +1,10 @@
 :root {
-  --bg: #FFF8F3;
+  --bg: #FFFFFF;
   --panel: #FFFFFF;
   --fg: #231A14;
   --fg-muted: #8A7265;
   --border: #F0DFCF;
-  --accent: #D2491C;
+  --accent: #FF6A1A;
   --accent-fg: #FFFFFF;
 }
 
@@ -41,6 +41,7 @@ body {
   border-radius: 8px;
   background: var(--panel);
   border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(30, 20, 10, .05);
   margin-bottom: 8px;
 }
 
@@ -56,6 +57,13 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
+  box-shadow: 0 1px 2px rgba(30, 20, 10, .05);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.module-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(30, 20, 10, .08);
 }
 
 .module-card .status {
@@ -78,9 +86,35 @@ body {
   text-decoration: none;
   font: inherit;
   cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease;
 }
 
-.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+.btn:active { transform: translateY(0) scale(.97); }
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+  box-shadow: 0 2px 8px rgba(255, 106, 26, .3);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08) saturate(1.1);
+  box-shadow: 0 6px 18px rgba(255, 106, 26, .45);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.btn-primary:active {
+  filter: brightness(.95);
+  box-shadow: 0 2px 6px rgba(255, 106, 26, .35);
+  transform: translateY(0) scale(.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn-primary, .module-card { transition: none; }
+  .btn:hover, .btn:active, .btn-primary:hover, .btn-primary:active, .module-card:hover { transform: none; }
+}
 
 .login-wrap {
   max-width: 360px;
@@ -89,6 +123,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 24px;
+  box-shadow: 0 4px 20px rgba(30, 20, 10, .06);
 }
 
 .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
