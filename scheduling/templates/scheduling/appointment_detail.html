@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Appointment · {{ clinic_name }}{% endblock %}
+{% block content %}
+<h1>Token #{{ appt.token_number }} — {{ appt.patient.full_name }}</h1>
+<p class="note-muted"><a href="{% url 'patient_detail' appt.patient.pk %}">{{ appt.patient.uhid }}</a> · {{ appt.patient.phone }}</p>
+
+<div class="module-card" style="max-width:480px">
+  <p><strong>Status:</strong> <span class="pill status-{{ appt.status }}">{{ appt.get_status_display }}</span></p>
+  <p><strong>Doctor:</strong> {{ appt.doctor.full_name }}</p>
+  <p><strong>Resource:</strong> {{ appt.resource.name }}</p>
+  <p><strong>Treatment:</strong> {{ appt.treatment.name|default:"—" }}</p>
+  <p><strong>Time:</strong> {{ appt.start_time|date:"d M Y, H:i" }} – {{ appt.end_time|date:"H:i" }}</p>
+  {% if appt.notes %}<p><strong>Notes:</strong> {{ appt.notes }}</p>{% endif %}
+</div>
+
+{% if next_status_choices %}
+<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+  {% for value, label in next_status_choices %}
+  <form method="post" action="{% url 'appointment_set_status' appt.pk value %}">
+    {% csrf_token %}
+    <button type="submit" class="btn {% if value == 'cancelled' or value == 'no_show' %}btn-danger{% else %}btn-primary{% endif %}">Mark {{ label }}</button>
+  </form>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if can_reschedule %}
+<h2 style="font-size:1rem;margin-top:24px">Reschedule</h2>
+<form method="post" class="stacked-form" style="max-width:480px">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="reschedule">
+  {% for field in reschedule_form %}
+  <div class="field">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  {% if reschedule_form.non_field_errors %}<div class="field-error">{{ reschedule_form.non_field_errors|striptags }}</div>{% endif %}
+  <button type="submit" class="btn btn-primary">Save changes</button>
+</form>
+{% endif %}
+{% endblock %}

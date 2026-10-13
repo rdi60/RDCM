@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Patients · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Patients</h1>
+  <a class="btn btn-primary" href="{% url 'patient_create' %}">+ Register patient</a>
+</div>
+
+<form method="get" style="margin:12px 0">
+  <input type="text" name="q" value="{{ query }}" placeholder="Search name, phone or UHID" style="min-width:260px">
+  <button type="submit" class="btn">Search</button>
+</form>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Name</th><th>UHID</th><th>Phone</th><th>Email</th></tr></thead>
+  <tbody>
+    {% for p in patients %}
+    <tr>
+      <td><a href="{% url 'patient_detail' p.pk %}">{{ p.full_name }}</a></td>
+      <td>{{ p.uhid }}</td>
+      <td>{{ p.phone }}</td>
+      <td>{{ p.email|default:"—" }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="note-muted">No patients found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

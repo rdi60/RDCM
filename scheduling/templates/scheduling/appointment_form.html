@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Book appointment · {{ clinic_name }}{% endblock %}
+{% block content %}
+<h1>Book appointment</h1>
+
+<form method="post" action="?{{ query }}" class="stacked-form" style="max-width:480px">
+  {% csrf_token %}
+  {% for field in form %}
+  <div class="field">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  {% if form.non_field_errors %}<div class="field-error">{{ form.non_field_errors|striptags }}</div>{% endif %}
+  <button type="submit" class="btn btn-primary">Book</button>
+</form>
+
+<p class="note-muted">
+  Don't see the patient? <a href="{% url 'patient_create' %}?next={{ register_next|urlencode }}">Register a new patient</a>, then you'll return here.
+</p>
+{% endblock %}

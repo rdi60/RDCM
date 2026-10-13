@@ -6,8 +6,8 @@ from django.urls import reverse
 # available=True and setting its url is literally all a later phase needs
 # to do to "turn it on" in the nav — this view doesn't otherwise change.
 MODULES = [
-    {"name": "Appointments", "phase": "Phase 2", "available": False},
-    {"name": "Patients", "phase": "Phase 2", "available": False},
+    {"name": "Appointments", "phase": "Phase 2", "available": True, "url_name": "calendar"},
+    {"name": "Patients", "phase": "Phase 2", "available": True, "url_name": "patient_list"},
     {"name": "Billing", "phase": "Phase 4", "available": False},
     {"name": "Inventory", "phase": "Phase 5", "available": False},
     {"name": "MIS Reports", "phase": "Phase 6", "available": False},
@@ -30,4 +30,12 @@ def home(request):
     setup_links = None
     if request.user.is_staff:
         setup_links = [(label, reverse(name)) for label, name in SETUP_LINKS]
-    return render(request, "core/home.html", {"modules": MODULES, "setup_links": setup_links})
+
+    modules = []
+    for m in MODULES:
+        module = dict(m)
+        if module["available"]:
+            module["url"] = reverse(module["url_name"])
+        modules.append(module)
+
+    return render(request, "core/home.html", {"modules": modules, "setup_links": setup_links})

@@ -29,6 +29,22 @@ plan; this repo currently covers:
 - All managed through Django Admin; the dashboard's "Clinic setup" section
   (staff only) links straight to each changelist
 
+**Phase 2 — patients & scheduling** (`scheduling` app)
+- Patient registration (contact details, medical history/allergies) with an
+  auto-generated UHID (`RD-00001`, ...), and a searchable patient list
+- Day view: a custom chair/OT resource grid (16 chairs + 2 OTs as columns,
+  time down the rows) — built in-house rather than on FullCalendar's paid
+  Premium plugin, which is what resource-timeline views normally require
+- Week view: appointment counts per doctor per day, click through to that
+  day's full grid
+- Booking, rescheduling and cancelling, with double-booking on the same
+  chair/OT or the same doctor rejected server-side (`Appointment.clean()`),
+  not just hidden in the UI
+- A daily per-clinic token number assigned on booking, and a status
+  lifecycle (scheduled → confirmed/arrived → in chair → completed, or
+  cancelled/no-show) enforced through an explicit allowed-transitions table
+  so a stray request can't skip straight from "scheduled" to "completed"
+
 ## Running locally
 
 Requires Python 3.12+ and a PostgreSQL server.
@@ -70,10 +86,11 @@ runs migrations and `seed_roles` automatically on every start.
 config/            Django settings (base/dev/prod), root URLs, WSGI/ASGI
 accounts/          Custom user model, role groups, Django Admin customization
 clinic/            Doctors, specialties, qualifications, chairs/OTs, treatments
+scheduling/        Patients, appointments, the day/week calendar grid
 core/              Dashboard shell, clinic-wide template context
 templates/, static/  Shared templates and CSS
 docker/, nginx/    Deployment: entrypoint script, Nginx reverse-proxy config
 ```
 
-Each later phase (appointments, billing, inventory, MIS reports) adds its
-own Django app alongside `accounts` and `core`, following the same pattern.
+Each later phase (billing, inventory, MIS reports) adds its own Django app
+alongside the existing ones, following the same pattern.

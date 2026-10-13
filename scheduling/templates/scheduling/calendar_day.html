@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Calendar · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="cal-toolbar">
+  <div class="cal-nav">
+    <a class="btn" href="?view=day&date={{ prev_date|date:'Y-m-d' }}">‹</a>
+    <strong>{{ selected_date|date:"D, d M Y" }}</strong>
+    <a class="btn" href="?view=day&date={{ next_date|date:'Y-m-d' }}">›</a>
+  </div>
+  <div class="cal-view-toggle">
+    <a class="btn btn-primary" href="?view=day&date={{ selected_date|date:'Y-m-d' }}">Day</a>
+    <a class="btn" href="?view=week&date={{ selected_date|date:'Y-m-d' }}">Week</a>
+  </div>
+</div>
+
+{% if resources %}
+<div class="cal-scroll">
+  <div class="cal-grid" style="grid-template-columns: 70px repeat({{ resources|length }}, minmax(150px, 1fr)); grid-template-rows: 44px repeat({{ slot_count }}, 28px);">
+    <div class="cal-cell cal-corner" style="grid-row:1;grid-column:1"></div>
+    {% for r in resources %}
+    <div class="cal-cell cal-header" style="grid-row:1;grid-column:{{ forloop.counter|add:1 }}">{{ r.name }}</div>
+    {% endfor %}
+
+    {% for t in time_labels %}
+    <div class="cal-cell cal-time" style="grid-row:{{ t.row }};grid-column:1">{{ t.label }}</div>
+    {% endfor %}
+
+    {% for cell in empty_cells %}
+    <a class="cal-cell cal-empty" style="grid-row:{{ cell.row }};grid-column:{{ cell.col }}" href="{% url 'appointment_create' %}?resource={{ cell.resource_id }}&start={{ cell.slot_iso }}" title="Book this slot"></a>
+    {% endfor %}
+
+    {% for b in blocks %}
+    <a class="cal-cell cal-appt status-{{ b.appt.status }}" style="grid-row:{{ b.row_start }} / span {{ b.span }};grid-column:{{ b.col }}" href="{% url 'appointment_detail' b.appt.pk %}">
+      <strong>#{{ b.appt.token_number }} {{ b.appt.patient.full_name }}</strong>
+      <span>{{ b.appt.doctor.full_name }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<p class="note-muted">No active chairs or OTs yet — add them from Clinic setup on the dashboard.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.full_name }} · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ patient.full_name }}</h1>
+    <p class="note-muted">{{ patient.uhid }} · {{ patient.phone }}{% if patient.email %} · {{ patient.email }}{% endif %}</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'appointment_create' %}?patient={{ patient.pk }}">+ Book appointment</a>
+</div>
+
+<div class="module-card" style="max-width:600px">
+  <p><strong>Date of birth:</strong> {{ patient.date_of_birth|default:"—" }}</p>
+  <p><strong>Gender:</strong> {{ patient.get_gender_display|default:"—" }}</p>
+  <p><strong>Address:</strong> {{ patient.address|default:"—" }}</p>
+  <p><strong>Medical history / allergies:</strong> {{ patient.medical_history|default:"—" }}</p>
+  <p><strong>Referral source:</strong> {{ patient.referral_source|default:"—" }}</p>
+</div>
+
+<h2 style="font-size:1rem;margin-top:24px">Appointment history</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Date</th><th>Doctor</th><th>Treatment</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for a in appointments %}
+    <tr>
+      <td><a href="{% url 'appointment_detail' a.pk %}">{{ a.start_time|date:"d M Y, H:i" }}</a></td>
+      <td>{{ a.doctor.full_name }}</td>
+      <td>{{ a.treatment.name|default:"—" }}</td>
+      <td><span class="pill status-{{ a.status }}">{{ a.get_status_display }}</span></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="note-muted">No appointments yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

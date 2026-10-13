@@ -2,7 +2,7 @@
 {% block title %}Dashboard · {{ clinic_name }}{% endblock %}
 {% block content %}
 <h1 style="margin-bottom:4px">Welcome, {{ user.get_full_name|default:user.username }}</h1>
-<p style="color:var(--fg-muted);margin-top:0">{{ clinic_name }} clinic management — Phase 0 foundations.</p>
+<p style="color:var(--fg-muted);margin-top:0">{{ clinic_name }} clinic management.</p>
 
 {% if setup_links %}
 <h2 style="font-size:1rem;margin-bottom:8px">Clinic setup</h2>
@@ -18,10 +18,17 @@
 <h2 style="font-size:1rem;margin-bottom:8px">Modules</h2>
 <div class="module-grid">
   {% for m in modules %}
+  {% if m.available %}
+  <a class="module-card" href="{{ m.url }}" style="text-decoration:none;color:inherit;display:block">
+    <strong>{{ m.name }}</strong>
+    <div class="status" style="color:var(--good)">Open →</div>
+  </a>
+  {% else %}
   <div class="module-card">
     <strong>{{ m.name }}</strong>
     <div class="status">{{ m.phase }} — coming soon</div>
   </div>
+  {% endif %}
   {% endfor %}
 </div>
 {% endblock %}

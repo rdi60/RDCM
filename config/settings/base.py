@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "accounts",
     "core",
     "clinic",
+    "scheduling",
 ]
 
 MIDDLEWARE = [
@@ -105,3 +106,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Clinic-level settings, read by templates (core.context_processors.clinic)
 CLINIC_NAME = env("CLINIC_NAME", default="Raja Dental")
 HRMS_URL = env("HRMS_URL", default="")
+
+# Operating hours the day-view calendar grid is drawn across.
+CLINIC_OPEN_HOUR = env.int("CLINIC_OPEN_HOUR", default=9)
+CLINIC_CLOSE_HOUR = env.int("CLINIC_CLOSE_HOUR", default=20)
+CLINIC_SLOT_MINUTES = env.int("CLINIC_SLOT_MINUTES", default=30)

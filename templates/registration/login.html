@@ -6,7 +6,7 @@
   <form method="post">
     {% csrf_token %}
     {% if form.errors %}
-      <p style="color:#C0392B">Incorrect username or password.</p>
+      <p style="color:var(--bad)">Incorrect username or password.</p>
     {% endif %}
     <div class="field">
       <label for="id_username">Username</label>
