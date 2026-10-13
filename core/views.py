@@ -10,7 +10,7 @@ MODULES = [
     {"name": "Patients", "phase": "Phase 2", "available": True, "url_name": "patient_list"},
     {"name": "Billing", "phase": "Phase 4", "available": True, "url_name": "invoice_list"},
     {"name": "Inventory", "phase": "Phase 5", "available": True, "url_name": "stock_levels"},
-    {"name": "MIS Reports", "phase": "Phase 6", "available": False},
+    {"name": "MIS Reports", "phase": "Phase 6", "available": True, "url_name": "reports_hub"},
 ]
 
 # Phase 1 master data is managed through Django Admin rather than custom

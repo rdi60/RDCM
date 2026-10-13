@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Follow-up / recall · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Follow-up / recall</h1>
+  <a class="btn" href="{% url 'reports_hub' %}">All reports</a>
+</div>
+{% include "reports/_period_selector.html" %}
+<p class="note-muted">Completed appointments with a follow-up date in this range, where the patient hasn't already been rebooked since. Set a follow-up date from any completed appointment's page.</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Follow-up date</th><th>Patient</th><th>Doctor</th><th>Treatment</th><th>Contact</th></tr></thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.appt.follow_up_date|date:"d M Y" }}</td>
+      <td><a href="{% url 'patient_detail' row.appt.patient.pk %}">{{ row.appt.patient.full_name }}</a></td>
+      <td>{{ row.appt.doctor.full_name }}</td>
+      <td>{{ row.appt.treatment.name|default:"—" }}</td>
+      <td>
+        {{ row.appt.patient.phone }}
+        {% if row.wa_link %}<br><a class="wa-link" href="{{ row.wa_link }}" target="_blank" rel="noopener">WhatsApp reminder ↗</a>{% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="note-muted">Nothing due for recall in this period.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

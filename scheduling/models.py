@@ -82,6 +82,9 @@ class Appointment(models.Model):
     end_time = models.DateTimeField()
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.SCHEDULED)
     token_number = models.PositiveIntegerField(null=True, blank=True, editable=False)
+    follow_up_date = models.DateField(
+        null=True, blank=True, help_text="When this patient should be recalled, if at all."
+    )
     notes = models.TextField(blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"

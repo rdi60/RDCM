@@ -11,7 +11,19 @@
   <p><strong>Treatment:</strong> {{ appt.treatment.name|default:"—" }}</p>
   <p><strong>Time:</strong> {{ appt.start_time|date:"d M Y, H:i" }} – {{ appt.end_time|date:"H:i" }}</p>
   {% if appt.notes %}<p><strong>Notes:</strong> {{ appt.notes }}</p>{% endif %}
+  <p><strong>Follow-up:</strong> {{ appt.follow_up_date|date:"d M Y"|default:"Not set" }}</p>
 </div>
+
+<form method="post" style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="set_follow_up">
+  <label for="id_follow_up_date" class="note-muted">Recall patient on</label>
+  <input type="date" id="id_follow_up_date" name="follow_up_date" value="{{ appt.follow_up_date|date:'Y-m-d' }}">
+  <button type="submit" class="btn">Save</button>
+  {% if appt.follow_up_date %}
+  <button type="submit" name="clear" value="1" class="btn btn-sm">Clear</button>
+  {% endif %}
+</form>
 
 {% if next_status_choices %}
 <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">

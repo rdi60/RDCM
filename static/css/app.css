@@ -232,3 +232,6 @@ tbody tr:hover { background: var(--neutral-soft); }
   text-decoration: none;
 }
 .week-table .week-count-zero { color: var(--fg-muted); }
+
+.wa-link { display: inline-flex; align-items: center; gap: 4px; font-size: .82rem; font-weight: 700; color: #1DA851; text-decoration: none; }
+.wa-link:hover { text-decoration: underline; }

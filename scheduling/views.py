@@ -242,6 +242,18 @@ def appointment_detail(request, pk):
             reschedule_form.save()
             messages.success(request, "Appointment rescheduled.")
             return redirect("appointment_detail", pk=appt.pk)
+    elif request.method == "POST" and request.POST.get("action") == "set_follow_up":
+        if request.POST.get("clear"):
+            follow_up_date = None
+        else:
+            follow_up_date = parse_date(request.POST.get("follow_up_date", ""))
+        appt.follow_up_date = follow_up_date
+        appt.save(update_fields=["follow_up_date"])
+        messages.success(
+            request,
+            f"Follow-up set for {follow_up_date:%d %b %Y}." if follow_up_date else "Follow-up cleared.",
+        )
+        return redirect("appointment_detail", pk=appt.pk)
     else:
         reschedule_form = AppointmentForm(instance=appt)
 

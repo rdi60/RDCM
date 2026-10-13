@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}MIS Reports · {{ clinic_name }}{% endblock %}
+{% block content %}
+<h1>MIS Reports</h1>
+<div class="module-grid">
+  <a class="module-card" href="{% url 'footfall_report' %}" style="text-decoration:none;color:inherit;display:block">
+    <strong>Footfall</strong>
+    <div class="status">Appointments by status, doctor, treatment</div>
+  </a>
+  <a class="module-card" href="{% url 'revenue_report' %}" style="text-decoration:none;color:inherit;display:block">
+    <strong>Revenue</strong>
+    <div class="status">Invoiced vs collected, by doctor and treatment</div>
+  </a>
+  <a class="module-card" href="{% url 'utilization_report' %}" style="text-decoration:none;color:inherit;display:block">
+    <strong>Chair/OT utilization</strong>
+    <div class="status">Booked vs available time per resource</div>
+  </a>
+  <a class="module-card" href="{% url 'inventory_report' %}" style="text-decoration:none;color:inherit;display:block">
+    <strong>Inventory</strong>
+    <div class="status">Purchases, consumption, stock value</div>
+  </a>
+  <a class="module-card" href="{% url 'recall_report' %}" style="text-decoration:none;color:inherit;display:block">
+    <strong>Follow-up / recall</strong>
+    <div class="status">Patients due for a follow-up, with WhatsApp reminders</div>
+  </a>
+  <a class="module-card" href="{% url 'dues_list' %}" style="text-decoration:none;color:inherit;display:block">
+    <strong>Outstanding dues</strong>
+    <div class="status">Unpaid and partially-paid invoices</div>
+  </a>
+</div>
+{% endblock %}

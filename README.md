@@ -86,13 +86,48 @@ plan; this repo currently covers:
   automatically (`inventory/services.py`), and both reject a request that
   exceeds what's actually available at that location
 - Consumption can optionally link to an appointment, so a treatment's
-  stock cost is traceable later — not yet rolled up into MIS reports
+  stock cost is traceable later (the inventory report below uses it for
+  clinic-wide totals; a per-treatment or per-appointment cost breakdown
+  isn't built yet)
 - Low-stock alerts (below each item's reorder level, clinic-wide) and an
   expiring-within-60-days batch list
 
 Two things intentionally deferred: there's no bill-of-materials linking a
 `Treatment` to the items it should auto-consume (consumption is recorded by
 hand), and GST-style HSN/SAC codes aren't modeled on `Item`.
+
+**Phase 6 — MIS reports** (`reports` app)
+- A hub page linking five reports, plus the existing outstanding-dues
+  report from billing: Footfall, Revenue, Chair/OT utilization, Inventory,
+  and Follow-up/recall
+- Every report shares the same Today / This week / This month / Custom
+  date-range filter (`reports/utils.py:resolve_period`)
+- **Footfall**: appointment counts by status, doctor, and treatment
+- **Revenue**: invoiced vs collected, by doctor (only for invoices created
+  from an appointment — a manually-created invoice has no doctor to
+  attribute it to), by treatment, and by payment mode
+- **Chair/OT utilization**: booked vs available minutes per resource,
+  using the same `CLINIC_OPEN_HOUR`/`CLOSE_HOUR` settings the calendar
+  grid draws from
+- **Inventory**: purchase value and consumption value for the period, plus
+  current stock value and a low-stock list
+- **Follow-up/recall**: this is the module the very first version of this
+  project was — a standalone Claude Artifact with its own throwaway data.
+  It's now real: `Appointment` gained a `follow_up_date` field (set from
+  the appointment page, most naturally when marking a visit completed),
+  and the report lists completed appointments due for recall in the
+  selected period, excluding anyone already rebooked since, each with a
+  click-to-send WhatsApp reminder link (`wa.me`, pre-filled message) —
+  the same phone-normalization approach (10-digit Indian numbers get a
+  `91` prefix) as the original artifact
+- There's no explicit "mark as contacted" action — a patient drops off the
+  recall list only once they're rebooked, not once someone's called them;
+  that's a quick addition if you want it
+
+All five phases from the original roadmap are now built. What's left:
+**Phase 3** (feeding your existing patient queue board) is still waiting on
+its integration spec from you; everything else was scope added mid-build
+(stores-to-rooms inventory, HRMS link) and is done.
 
 ## Running locally
 
@@ -138,9 +173,10 @@ clinic/            Doctors, specialties, qualifications, chairs/OTs, treatments
 scheduling/        Patients, appointments, the day/week calendar grid
 billing/           Invoices, line items, payments, print pages, dues report
 inventory/         Suppliers, items, purchase orders, GRNs, stock ledger
+reports/           MIS reports hub + footfall/revenue/utilization/
+                   inventory/recall reports
 core/              Dashboard shell, clinic-wide template context
 templates/, static/  Shared templates and CSS
 docker/, nginx/    Deployment: entrypoint script, Nginx reverse-proxy config
 ```
 
-MIS reports (Phase 6) will be the last app, following the same pattern.
