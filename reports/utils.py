@@ -47,9 +47,20 @@ def whatsapp_link(phone, message):
 
 
 def recall_message(patient, doctor, treatment):
-    treatment_bit = f" ({treatment.name})" if treatment else ""
+    """Standard WhatsApp has no Business Associate Agreement available, so by
+    default this omits anything that counts as PHI beyond the patient's own
+    name and phone number (which they obviously already know) — no
+    treatment, no doctor name, nothing about why they're being recalled.
+    Set WHATSAPP_INCLUDE_CLINICAL_DETAILS only if you have a BAA with a
+    WhatsApp Business Solution Provider."""
+    if settings.WHATSAPP_INCLUDE_CLINICAL_DETAILS:
+        treatment_bit = f" ({treatment.name})" if treatment else ""
+        return (
+            f"Hi {patient.full_name}, this is a reminder from {settings.CLINIC_NAME} for your "
+            f"follow-up{treatment_bit} with {doctor.full_name}. Please call us to book your "
+            f"appointment. Thank you!"
+        )
     return (
-        f"Hi {patient.full_name}, this is a reminder from {settings.CLINIC_NAME} for your "
-        f"follow-up{treatment_bit} with {doctor.full_name}. Please call us to book your "
-        f"appointment. Thank you!"
+        f"Hi {patient.full_name}, this is a reminder from {settings.CLINIC_NAME}. "
+        f"Please call us to book your next appointment. Thank you!"
     )

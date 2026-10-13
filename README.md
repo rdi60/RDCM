@@ -129,6 +129,34 @@ All five phases from the original roadmap are now built. What's left:
 its integration spec from you; everything else was scope added mid-build
 (stores-to-rooms inventory, HRMS link) and is done.
 
+**HIPAA technical safeguards** (`audit` app + changes across every other app)
+- Role-based access control: Django's built-in per-model permissions,
+  assigned per role by `manage.py seed_roles` on a minimum-necessary basis,
+  enforced with `@permission_required` on every view (not just hidden in
+  the nav)
+- Audit logging (`audit` app): every create/update/delete of a patient,
+  appointment, invoice, payment, or inventory transaction, every view of a
+  PHI detail page, and every login/logout/failed-login, with user,
+  timestamp, IP, and record identity — read-only in Django Admin, not
+  editable or deletable through the app
+- Session idle timeout (15 min by default) and account lockout after
+  repeated failed logins (`django-axes`)
+- Mandatory TOTP multi-factor authentication for every account
+  (`core.middleware.RequireOTPMiddleware`) — enrollment via QR code on
+  first login, re-verification each new session, no per-user opt-out
+- The WhatsApp recall reminder no longer includes treatment or doctor name
+  by default, since standard WhatsApp has no Business Associate Agreement
+  available (`WHATSAPP_INCLUDE_CLINICAL_DETAILS` to opt back in if you have
+  one)
+- Field-level encryption at rest (Fernet/AES, `core.fields.EncryptedTextField`)
+  for `Patient.medical_history` and `Appointment.notes`
+
+See `SECURITY.md` for what this does and does not cover — HIPAA also
+requires administrative and physical safeguards (BAAs, a risk analysis,
+workforce training, a tested backup/disaster-recovery plan, key management
+for `FIELD_ENCRYPTION_KEY`, ...) that no application's code can provide on
+its own.
+
 ## Running locally
 
 Requires Python 3.12+ and a PostgreSQL server.
@@ -139,7 +167,8 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 cp .env.example .env   # then edit DJANGO_SECRET_KEY and the POSTGRES_* values
-                        # to match a database you've created locally
+                        # to match a database you've created locally, and set
+                        # FIELD_ENCRYPTION_KEY (see .env.example for how)
 
 python manage.py migrate
 python manage.py seed_roles
@@ -149,7 +178,9 @@ python manage.py runserver
 ```
 
 Visit `http://127.0.0.1:8000/`, sign in, and `/admin/` for the back-office
-screens (users, groups/roles).
+screens (users, groups/roles). On first login you'll be asked to scan a QR
+code and enter a 6-digit code to enroll in two-factor authentication —
+that's required for every account, with no way to skip it.
 
 ## Running with Docker (closer to the VPS setup)
 

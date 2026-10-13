@@ -4,13 +4,15 @@ from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
 
+from audit.utils import log_view
 from clinic.models import Doctor, Resource
 
 from .forms import AppointmentForm, PatientForm
@@ -22,6 +24,7 @@ SLOT_MINUTES = settings.CLINIC_SLOT_MINUTES
 # ---- Patients ---------------------------------------------------------
 
 @login_required
+@permission_required("scheduling.view_patient", raise_exception=True)
 def patient_list(request):
     query = request.GET.get("q", "").strip()
     patients = Patient.objects.all()
@@ -33,6 +36,7 @@ def patient_list(request):
 
 
 @login_required
+@permission_required("scheduling.add_patient", raise_exception=True)
 def patient_create(request):
     next_url = request.GET.get("next", "")
     if request.method == "POST":
@@ -50,8 +54,10 @@ def patient_create(request):
 
 
 @login_required
+@permission_required("scheduling.view_patient", raise_exception=True)
 def patient_detail(request, pk):
     patient = get_object_or_404(Patient, pk=pk)
+    log_view(request, patient)
     appointments = patient.appointments.select_related("doctor", "resource", "treatment").order_by(
         "-start_time"
     )
@@ -79,6 +85,7 @@ def _day_slots(day):
 
 
 @login_required
+@permission_required("scheduling.view_appointment", raise_exception=True)
 def calendar_view(request):
     view = request.GET.get("view", "day")
     date_str = request.GET.get("date")
@@ -190,6 +197,7 @@ def _week_view(request, selected_date):
 # ---- Appointments -------------------------------------------------------
 
 @login_required
+@permission_required("scheduling.add_appointment", raise_exception=True)
 def appointment_create(request):
     resource_id = request.GET.get("resource", "")
     start_param = request.GET.get("start", "")
@@ -232,10 +240,15 @@ def appointment_create(request):
 
 
 @login_required
+@permission_required("scheduling.view_appointment", raise_exception=True)
 def appointment_detail(request, pk):
     appt = get_object_or_404(
         Appointment.objects.select_related("patient", "doctor", "resource", "treatment"), pk=pk
     )
+    log_view(request, appt)
+    if request.method == "POST" and request.POST.get("action") in ("reschedule", "set_follow_up"):
+        if not request.user.has_perm("scheduling.change_appointment"):
+            raise PermissionDenied
     if request.method == "POST" and request.POST.get("action") == "reschedule":
         reschedule_form = AppointmentForm(request.POST, instance=appt)
         if reschedule_form.is_valid():
@@ -272,6 +285,7 @@ def appointment_detail(request, pk):
 
 
 @login_required
+@permission_required("scheduling.change_appointment", raise_exception=True)
 def appointment_set_status(request, pk, new_status):
     if request.method != "POST":
         return redirect("appointment_detail", pk=pk)

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Set up two-factor authentication · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="login-wrap">
+  <h1 style="font-size:1.2rem;margin-top:0">Set up two-factor authentication</h1>
+  <p class="note-muted">
+    Scan this QR code with an authenticator app (Google Authenticator, Authy, 1Password, ...),
+    then enter the 6-digit code it shows to finish enabling MFA on your account. This is required
+    for every account before you can use the rest of the system.
+  </p>
+  <p style="text-align:center">
+    <img src="{% url 'mfa_qr' %}" alt="Scan with your authenticator app" width="200" height="200">
+  </p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="field">
+      <label for="id_token">6-digit code</label>
+      {{ form.token }}
+      {% for error in form.token.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+      {% for error in form.non_field_errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%">Verify &amp; enable</button>
+  </form>
+</div>
+{% endblock %}

@@ -6,6 +6,7 @@ from django.db import models
 from django.utils import timezone
 
 from clinic.models import Doctor, Resource, Treatment
+from core.fields import EncryptedTextField
 
 
 class Patient(models.Model):
@@ -21,7 +22,7 @@ class Patient(models.Model):
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=1, choices=Gender.choices, blank=True)
     address = models.TextField(blank=True)
-    medical_history = models.TextField(
+    medical_history = EncryptedTextField(
         blank=True, help_text="Allergies, conditions, medications, etc."
     )
     referral_source = models.CharField(max_length=100, blank=True)
@@ -85,7 +86,7 @@ class Appointment(models.Model):
     follow_up_date = models.DateField(
         null=True, blank=True, help_text="When this patient should be recalled, if at all."
     )
-    notes = models.TextField(blank=True)
+    notes = EncryptedTextField(blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )

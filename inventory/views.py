@@ -1,6 +1,6 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -17,14 +17,23 @@ from .models import (
     StockTransfer,
 )
 
+PO_ACTION_PERMS = {
+    "add_line": "inventory.add_purchaseorderline",
+    "send": "inventory.change_purchaseorder",
+    "cancel": "inventory.change_purchaseorder",
+    "receive_line": "inventory.add_goodsreceiptnote",
+}
+
 
 @login_required
+@permission_required("inventory.view_purchaseorder", raise_exception=True)
 def po_list(request):
     orders = PurchaseOrder.objects.select_related("supplier")
     return render(request, "inventory/po_list.html", {"orders": orders[:200]})
 
 
 @login_required
+@permission_required("inventory.add_purchaseorder", raise_exception=True)
 def po_create(request):
     if request.method == "POST":
         form = PurchaseOrderForm(request.POST)
@@ -40,12 +49,16 @@ def po_create(request):
 
 
 @login_required
+@permission_required("inventory.view_purchaseorder", raise_exception=True)
 def po_detail(request, pk):
     po = get_object_or_404(PurchaseOrder.objects.select_related("supplier"), pk=pk)
     line_form = PurchaseOrderLineForm()
 
     if request.method == "POST":
         action = request.POST.get("action")
+        required_perm = PO_ACTION_PERMS.get(action)
+        if required_perm and not request.user.has_perm(required_perm):
+            raise PermissionDenied
 
         if action == "add_line" and po.status == PurchaseOrder.Status.DRAFT:
             line_form = PurchaseOrderLineForm(request.POST)
@@ -114,6 +127,7 @@ def po_detail(request, pk):
 
 
 @login_required
+@permission_required("inventory.add_stocktransfer", raise_exception=True)
 def transfer_create(request):
     form = TransferRequestForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -142,6 +156,7 @@ def transfer_create(request):
 
 
 @login_required
+@permission_required("inventory.add_stocktransaction", raise_exception=True)
 def consumption_create(request):
     form = ConsumptionForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -194,6 +209,7 @@ def _create_transfer(batch, from_location, to_location, quantity, user, notes):
 
 
 @login_required
+@permission_required("inventory.view_stocktransaction", raise_exception=True)
 def stock_levels(request):
     grouped = (
         StockTransaction.objects.values("item_id", "item__name", "item__unit", "location_id", "location__name")
@@ -205,6 +221,7 @@ def stock_levels(request):
 
 
 @login_required
+@permission_required("inventory.view_item", raise_exception=True)
 def alerts(request):
     low_stock = [item for item in Item.objects.filter(is_active=True, reorder_level__gt=0) if item.is_low_stock]
 

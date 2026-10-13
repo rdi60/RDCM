@@ -2,7 +2,7 @@ from datetime import datetime, time
 from decimal import Decimal
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count
 from django.shortcuts import render
 from django.utils import timezone
@@ -29,6 +29,7 @@ def reports_hub(request):
 
 
 @login_required
+@permission_required("scheduling.view_appointment", raise_exception=True)
 def footfall_report(request):
     period, start, end = resolve_period(request)
     start_dt, end_dt = _day_bounds(start, end)
@@ -69,6 +70,7 @@ def footfall_report(request):
 
 
 @login_required
+@permission_required("billing.view_invoice", raise_exception=True)
 def revenue_report(request):
     period, start, end = resolve_period(request)
     start_dt, end_dt = _day_bounds(start, end)
@@ -120,6 +122,7 @@ def revenue_report(request):
 
 
 @login_required
+@permission_required("scheduling.view_appointment", raise_exception=True)
 def utilization_report(request):
     period, start, end = resolve_period(request)
     start_dt, end_dt = _day_bounds(start, end)
@@ -156,6 +159,7 @@ def utilization_report(request):
 
 
 @login_required
+@permission_required("inventory.view_stocktransaction", raise_exception=True)
 def inventory_report(request):
     period, start, end = resolve_period(request)
     start_dt, end_dt = _day_bounds(start, end)
@@ -193,6 +197,7 @@ def inventory_report(request):
 
 
 @login_required
+@permission_required("scheduling.view_patient", raise_exception=True)
 def recall_report(request):
     period, start, end = resolve_period(request)
 
