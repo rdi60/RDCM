@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · {{ clinic_name }}{% endblock %}
+{% block content %}
+<h1 style="margin-bottom:4px">Welcome, {{ user.get_full_name|default:user.username }}</h1>
+<p style="color:var(--fg-muted);margin-top:0">{{ clinic_name }} clinic management — Phase 0 foundations.</p>
+
+<div class="module-grid">
+  {% for m in modules %}
+  <div class="module-card">
+    <strong>{{ m.name }}</strong>
+    <div class="status">{{ m.phase }} — coming soon</div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

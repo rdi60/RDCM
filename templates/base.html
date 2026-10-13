@@ -1,0 +1,35 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ clinic_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  {% if user.is_authenticated %}
+  <header class="topbar">
+    <span class="brand">{{ clinic_name }}</span>
+    <nav>
+      <a href="{% url 'home' %}">Dashboard</a>
+      {% if hrms_url %}<a href="{{ hrms_url }}" target="_blank" rel="noopener">HRMS</a>{% endif %}
+      {% if user.is_staff %}<a href="{% url 'admin:index' %}">Admin</a>{% endif %}
+      <span>{{ user }}</span>
+      <form method="post" action="{% url 'logout' %}" style="margin:0">
+        {% csrf_token %}
+        <button type="submit" class="btn" style="padding:4px 10px">Log out</button>
+      </form>
+    </nav>
+  </header>
+  {% endif %}
+
+  <main class="container">
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

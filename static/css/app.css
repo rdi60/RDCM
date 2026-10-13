@@ -1,0 +1,101 @@
+:root {
+  --bg: #F3F6F6;
+  --panel: #FFFFFF;
+  --fg: #16262A;
+  --fg-muted: #5C7278;
+  --border: #D7E3E3;
+  --accent: #0E7C86;
+  --accent-fg: #FFFFFF;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar .brand { font-weight: 700; font-size: 1.1rem; }
+
+.topbar nav { display: flex; gap: 14px; align-items: center; font-size: .9rem; }
+.topbar nav a { color: var(--fg-muted); text-decoration: none; }
+.topbar nav a:hover { color: var(--accent); }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+.messages { list-style: none; padding: 0; margin: 0 0 16px; }
+.messages li {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.module-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.module-card .status {
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: var(--fg-muted);
+  margin-top: 6px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--fg);
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+
+.login-wrap {
+  max-width: 360px;
+  margin: 10vh auto 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+.field label { font-size: .82rem; font-weight: 600; color: var(--fg-muted); }
+.field input {
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
