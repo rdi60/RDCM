@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Inventory alerts · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Inventory alerts</h1>
+  <a class="btn" href="{% url 'stock_levels' %}">Stock levels</a>
+</div>
+
+<h2 style="font-size:1rem">Low stock</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Item</th><th>On hand</th><th>Reorder level</th></tr></thead>
+  <tbody>
+    {% for item in low_stock %}
+    <tr>
+      <td>{{ item.name }}</td>
+      <td style="color:var(--bad);font-weight:700">{{ item.total_quantity }} {{ item.unit }}</td>
+      <td>{{ item.reorder_level }} {{ item.unit }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3" class="note-muted">Nothing below its reorder level.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<h2 style="font-size:1rem;margin-top:24px">Expiring within 60 days</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Item</th><th>Batch</th><th>Expiry</th><th>Qty remaining</th></tr></thead>
+  <tbody>
+    {% for batch in expiring %}
+    <tr>
+      <td>{{ batch.item.name }}</td>
+      <td>{{ batch.batch_number|default:"—" }}</td>
+      <td style="color:{% if batch.is_expired %}var(--bad){% else %}var(--warn){% endif %};font-weight:700">{{ batch.expiry_date|date:"d M Y" }}</td>
+      <td>{{ batch.quantity_remaining }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="note-muted">Nothing expiring soon.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

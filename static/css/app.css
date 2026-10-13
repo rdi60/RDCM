@@ -182,6 +182,8 @@ tbody tr:hover { background: var(--neutral-soft); }
 .status-issued, .status-partially_paid { background: var(--warn-soft); color: var(--warn); }
 .status-paid { background: var(--good-soft); color: var(--good); }
 .status-void { background: var(--bad-soft); color: var(--bad); }
+.status-sent, .status-partially_received { background: var(--warn-soft); color: var(--warn); }
+.status-received { background: var(--good-soft); color: var(--good); }
 
 .btn-sm { padding: 4px 10px; font-size: .78rem; border-radius: 7px; }
 

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Stock levels · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Stock levels</h1>
+  <div style="display:flex;gap:8px">
+    <a class="btn" href="{% url 'po_list' %}">Purchase orders</a>
+    <a class="btn" href="{% url 'transfer_create' %}">Transfer stock</a>
+    <a class="btn" href="{% url 'consumption_create' %}">Record use</a>
+    <a class="btn" href="{% url 'inventory_alerts' %}">Alerts</a>
+  </div>
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Item</th><th>Location</th><th>Quantity</th></tr></thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.item__name }}</td>
+      <td>{{ row.location__name }}</td>
+      <td>{{ row.qty }} {{ row.item__unit }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3" class="note-muted">No stock recorded yet. Receive against a purchase order to get started.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

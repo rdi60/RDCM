@@ -15,6 +15,7 @@
       <a href="{% url 'calendar' %}">Appointments</a>
       <a href="{% url 'patient_list' %}">Patients</a>
       <a href="{% url 'invoice_list' %}">Billing</a>
+      <a href="{% url 'stock_levels' %}">Inventory</a>
       {% if hrms_url %}<a href="{{ hrms_url }}" target="_blank" rel="noopener">HRMS</a>{% endif %}
       {% if user.is_staff %}<a href="{% url 'admin:index' %}">Admin</a>{% endif %}
       <span>{{ user }}</span>

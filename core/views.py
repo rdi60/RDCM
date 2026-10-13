@@ -9,7 +9,7 @@ MODULES = [
     {"name": "Appointments", "phase": "Phase 2", "available": True, "url_name": "calendar"},
     {"name": "Patients", "phase": "Phase 2", "available": True, "url_name": "patient_list"},
     {"name": "Billing", "phase": "Phase 4", "available": True, "url_name": "invoice_list"},
-    {"name": "Inventory", "phase": "Phase 5", "available": False},
+    {"name": "Inventory", "phase": "Phase 5", "available": True, "url_name": "stock_levels"},
     {"name": "MIS Reports", "phase": "Phase 6", "available": False},
 ]
 
@@ -22,6 +22,9 @@ SETUP_LINKS = [
     ("Chairs & OTs", "admin:clinic_resource_changelist"),
     ("Treatments", "admin:clinic_treatment_changelist"),
     ("Users & roles", "admin:accounts_user_changelist"),
+    ("Suppliers", "admin:inventory_supplier_changelist"),
+    ("Items", "admin:inventory_item_changelist"),
+    ("Stock locations", "admin:inventory_stocklocation_changelist"),
 ]
 
 

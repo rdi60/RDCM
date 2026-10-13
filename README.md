@@ -66,6 +66,34 @@ plan; this repo currently covers:
 - Outstanding dues report: every unpaid/partially-paid invoice with its
   balance, plus a running total
 
+**Phase 5 — inventory & procurement** (`inventory` app)
+- Full purchasing workflow: `PurchaseOrder` (draft → sent → partially
+  received/received, or cancelled) with editable lines while draft, and
+  `GoodsReceiptNote`/`GoodsReceiptLine` for receiving against a PO —
+  receiving creates a `StockBatch` (with batch number, expiry date, cost
+  price) and a stock-in transaction automatically
+- Suppliers and Items are master data managed through Django Admin, same
+  pattern as Doctors/Resources/Treatments; `StockLocation` records (central
+  store, clinical rooms) are too — none are auto-seeded, since the room
+  layout wasn't specified, unlike the 16 chairs + 2 OTs
+- Every stock movement (receipt, transfer, consumption, future adjustments)
+  is a signed row in one `StockTransaction` ledger — current quantity is
+  always computed by summing these, never a separately maintained balance
+  field, the same approach `Invoice.paid_amount` already uses for payments
+- Store → clinical room transfers and per-room consumption are requested by
+  item + quantity, not by batch number — staff shouldn't need to know batch
+  numbers to move or use stock, so both pick batches oldest-expiry-first
+  automatically (`inventory/services.py`), and both reject a request that
+  exceeds what's actually available at that location
+- Consumption can optionally link to an appointment, so a treatment's
+  stock cost is traceable later — not yet rolled up into MIS reports
+- Low-stock alerts (below each item's reorder level, clinic-wide) and an
+  expiring-within-60-days batch list
+
+Two things intentionally deferred: there's no bill-of-materials linking a
+`Treatment` to the items it should auto-consume (consumption is recorded by
+hand), and GST-style HSN/SAC codes aren't modeled on `Item`.
+
 ## Running locally
 
 Requires Python 3.12+ and a PostgreSQL server.
@@ -109,10 +137,10 @@ accounts/          Custom user model, role groups, Django Admin customization
 clinic/            Doctors, specialties, qualifications, chairs/OTs, treatments
 scheduling/        Patients, appointments, the day/week calendar grid
 billing/           Invoices, line items, payments, print pages, dues report
+inventory/         Suppliers, items, purchase orders, GRNs, stock ledger
 core/              Dashboard shell, clinic-wide template context
 templates/, static/  Shared templates and CSS
 docker/, nginx/    Deployment: entrypoint script, Nginx reverse-proxy config
 ```
 
-Each later phase (inventory, MIS reports) adds its own Django app alongside
-the existing ones, following the same pattern.
+MIS reports (Phase 6) will be the last app, following the same pattern.

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Transfer stock · {{ clinic_name }}{% endblock %}
+{% block content %}
+<h1>Transfer stock</h1>
+<p class="note-muted">Moves the oldest-expiring stock first — pick the item and quantity, not a specific batch.</p>
+
+<form method="post" class="stacked-form" style="max-width:420px">
+  {% csrf_token %}
+  {% for field in form %}
+  <div class="field">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  {% if form.non_field_errors %}<div class="field-error">{{ form.non_field_errors|striptags }}</div>{% endif %}
+  <button type="submit" class="btn btn-primary">Transfer</button>
+</form>
+{% endblock %}
