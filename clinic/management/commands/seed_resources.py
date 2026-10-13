@@ -12,11 +12,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for i in range(1, options["chairs"] + 1):
-            self._ensure(Resource.ResourceType.CHAIR, f"Chair {i}")
+            self._ensure(Resource.ResourceType.CHAIR, f"Chair {i}", i)
         for i in range(1, options["ots"] + 1):
-            self._ensure(Resource.ResourceType.OT, f"OT {i}")
+            self._ensure(Resource.ResourceType.OT, f"OT {i}", i)
 
-    def _ensure(self, resource_type, name):
-        resource, created = Resource.objects.get_or_create(type=resource_type, name=name)
+    def _ensure(self, resource_type, name, number):
+        resource, created = Resource.objects.get_or_create(
+            type=resource_type, name=name, defaults={"number": number}
+        )
+        if not created and resource.number != number:
+            resource.number = number
+            resource.save(update_fields=["number"])
         status = "created" if created else "already exists"
         self.stdout.write(f"{name}: {status}")

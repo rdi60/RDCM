@@ -93,7 +93,7 @@ def calendar_view(request):
 
 def _day_view(request, selected_date):
     slots, open_dt, close_dt = _day_slots(selected_date)
-    resources = list(Resource.objects.filter(status=Resource.Status.ACTIVE).order_by("type", "name"))
+    resources = list(Resource.objects.filter(status=Resource.Status.ACTIVE).order_by("type", "number", "name"))
     col_for = {r.id: idx + 2 for idx, r in enumerate(resources)}
 
     appointments = (

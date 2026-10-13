@@ -28,7 +28,7 @@ class DoctorAdmin(admin.ModelAdmin):
 
 @admin.register(Resource)
 class ResourceAdmin(admin.ModelAdmin):
-    list_display = ["name", "type", "status"]
+    list_display = ["name", "type", "number", "status"]
     list_filter = ["type", "status"]
     search_fields = ["name"]
 

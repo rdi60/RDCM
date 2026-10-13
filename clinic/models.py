@@ -77,11 +77,14 @@ class Resource(models.Model):
 
     type = models.CharField(max_length=10, choices=ResourceType.choices)
     name = models.CharField(max_length=50, help_text="e.g. Chair 1, OT 2")
+    number = models.PositiveIntegerField(
+        default=0, help_text="Used only to sort resources in order (1, 2, 3, ...) instead of alphabetically."
+    )
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.ACTIVE)
     notes = models.CharField(max_length=255, blank=True)
 
     class Meta:
-        ordering = ["type", "name"]
+        ordering = ["type", "number", "name"]
         constraints = [
             models.UniqueConstraint(fields=["type", "name"], name="unique_resource_type_name")
         ]

@@ -129,7 +129,7 @@ def utilization_report(request):
     available_minutes = minutes_per_day * num_days
 
     rows = []
-    resources = Resource.objects.filter(status=Resource.Status.ACTIVE).order_by("type", "name")
+    resources = Resource.objects.filter(status=Resource.Status.ACTIVE).order_by("type", "number", "name")
     for resource in resources:
         appts = Appointment.objects.filter(
             resource=resource, start_time__gte=start_dt, start_time__lte=end_dt
