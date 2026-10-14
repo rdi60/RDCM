@@ -195,6 +195,36 @@ Nginx listens on port 80 and proxies to the Django app; static/media files
 are served by Nginx from shared volumes. The `web` container's entrypoint
 runs migrations and `seed_roles` automatically on every start.
 
+### Adding HTTPS
+
+The setup above is HTTP only — fine for a first smoke test, not for real use
+(HIPAA requires encryption in transit, and `DJANGO_SECURE_SSL_REDIRECT`
+defaults to `True` in prod, which will just loop-redirect until TLS is
+actually in place). Once you have a domain pointed at the VPS:
+
+```bash
+# 1. Get a certificate (standalone needs port 80 free briefly)
+docker compose stop nginx
+docker run --rm -p 80:80 -v letsencrypt:/etc/letsencrypt \
+  certbot/certbot certonly --standalone \
+  -d yourdomain.com -d www.yourdomain.com \
+  --email you@example.com --agree-tos --no-eff-email
+
+# 2. Set up the TLS config (edit the domain placeholders in it)
+cp nginx/nginx.tls.conf.example nginx/nginx.tls.conf
+sed -i 's/yourdomain.com/<your real domain>/g' nginx/nginx.tls.conf
+
+# 3. Add DJANGO_CSRF_TRUSTED_ORIGINS=https://<your domain>(s) to .env
+
+# 4. Bring everything up with the TLS overlay
+docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d --build
+```
+
+`docker-compose.tls.yml` adds a `certbot` service that renews the
+certificate automatically in the background (via the webroot method,
+against the ACME-challenge location already in `nginx.tls.conf.example`) —
+no further manual renewal needed after the first certificate.
+
 ## Project layout
 
 ```
