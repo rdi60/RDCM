@@ -1,0 +1,72 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ invoice.invoice_number|default:"Draft invoice" }} · {{ clinic_name }}</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #231A14; max-width: 760px; margin: 40px auto; padding: 0 20px; }
+  .letterhead { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #231A14; padding-bottom: 14px; margin-bottom: 20px; }
+  .letterhead h1 { margin: 0; font-size: 1.4rem; }
+  .meta { text-align: right; font-size: .85rem; }
+  .meta .num { font-weight: 700; font-size: 1rem; }
+  .parties { display: flex; justify-content: space-between; margin-bottom: 24px; font-size: .9rem; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: .9rem; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #ddd; }
+  th { text-transform: uppercase; font-size: .72rem; letter-spacing: .03em; color: #666; }
+  .totals { width: 280px; margin-left: auto; font-size: .9rem; }
+  .totals div { display: flex; justify-content: space-between; padding: 4px 0; }
+  .totals .grand { font-weight: 700; font-size: 1.05rem; border-top: 1px solid #231A14; margin-top: 6px; padding-top: 8px; }
+  .status-stamp { display: inline-block; margin-top: 16px; padding: 4px 12px; border: 2px solid #1F8A5F; color: #1F8A5F; font-weight: 700; border-radius: 6px; }
+  .print-btn {
+    margin-top: 24px; padding: 9px 18px; border-radius: 8px; border: 1px solid #FF6A1A;
+    background: #FF6A1A; color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  @media print { .print-btn { display: none; } body { margin: 0; } }
+</style>
+</head>
+<body>
+  <div class="letterhead">
+    <h1>{{ clinic_name }}</h1>
+    <div class="meta">
+      <div class="num">{{ invoice.invoice_number|default:"DRAFT" }}</div>
+      <div>{{ invoice.created_at|date:"d M Y" }}</div>
+    </div>
+  </div>
+
+  <div class="parties">
+    <div>
+      <strong>Billed to</strong><br>
+      {{ invoice.patient.full_name }}<br>
+      {{ invoice.patient.uhid }}<br>
+      {{ invoice.patient.phone }}
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>Item</th><th>Qty</th><th>Unit price</th><th>Line total</th></tr></thead>
+    <tbody>
+      {% for item in invoice.line_items.all %}
+      <tr>
+        <td>{{ item.description }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>₹{{ item.unit_price }}</td>
+        <td>₹{{ item.line_total }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <div><span>Subtotal</span><span>₹{{ invoice.subtotal }}</span></div>
+    <div><span>Discount</span><span>₹{{ invoice.discount }}</span></div>
+    <div><span>Tax ({{ invoice.tax_percent }}%)</span><span>₹{{ invoice.tax_amount }}</span></div>
+    <div class="grand"><span>Total</span><span>₹{{ invoice.total }}</span></div>
+    <div><span>Paid</span><span>₹{{ invoice.paid_amount }}</span></div>
+    <div><span>Balance due</span><span>₹{{ invoice.balance_due }}</span></div>
+  </div>
+
+  {% if invoice.status == 'paid' %}<span class="status-stamp">PAID IN FULL</span>{% endif %}
+
+  <button class="btn print-btn" onclick="window.print()">Print</button>
+</body>
+</html>

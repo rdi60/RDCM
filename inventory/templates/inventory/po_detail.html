@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{{ po.po_number|default:"Draft PO" }} · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ po.po_number|default:"Draft purchase order" }}</h1>
+    <p class="note-muted">{{ po.supplier.name }}{% if po.supplier.phone %} · {{ po.supplier.phone }}{% endif %}</p>
+  </div>
+  <span class="pill status-{{ po.status }}" style="font-size:.85rem;padding:6px 14px">{{ po.get_status_display }}</span>
+</div>
+
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+  {% if po.status == 'draft' %}
+  <form method="post"><input type="hidden" name="action" value="send">{% csrf_token %}<button type="submit" class="btn btn-primary">Send to supplier</button></form>
+  {% endif %}
+  {% if po.status == 'draft' or po.status == 'sent' %}
+  <form method="post" onsubmit="return confirm('Cancel this purchase order?');"><input type="hidden" name="action" value="cancel">{% csrf_token %}<button type="submit" class="btn btn-danger">Cancel</button></form>
+  {% endif %}
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Item</th><th>Ordered</th><th>Received</th><th>Pending</th><th>Unit cost</th></tr></thead>
+  <tbody>
+    {% for line in po.lines.all %}
+    <tr>
+      <td>{{ line.item.name }}</td>
+      <td>{{ line.quantity_ordered }}</td>
+      <td>{{ line.quantity_received }}</td>
+      <td>{{ line.quantity_pending }}</td>
+      <td>₹{{ line.unit_cost }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="note-muted">No lines yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% if po.status == 'draft' %}
+<h2 style="font-size:1rem;margin-top:20px">Add line</h2>
+<form method="post" class="stacked-form" style="max-width:420px">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="add_line">
+  {% for field in line_form %}
+  <div class="field">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  <button type="submit" class="btn">Add line</button>
+</form>
+{% endif %}
+
+{% if receive_rows %}
+<h2 style="font-size:1rem;margin-top:24px">Receive items</h2>
+{% for row in receive_rows %}
+<div class="module-card" style="max-width:480px;margin-bottom:12px">
+  <strong>{{ row.line.item.name }}</strong> — {{ row.line.quantity_pending }} pending
+  <form method="post" class="stacked-form" style="margin-top:10px">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="receive_line">
+    <input type="hidden" name="po_line_id" value="{{ row.line.pk }}">
+    {% for field in row.form %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Receive</button>
+  </form>
+</div>
+{% endfor %}
+{% endif %}
+
+<h2 style="font-size:1rem;margin-top:24px">Goods received</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>GRN #</th><th>Location</th><th>Date</th><th>Items</th></tr></thead>
+  <tbody>
+    {% for grn in po.grns.all %}
+    <tr>
+      <td>{{ grn.grn_number }}</td>
+      <td>{{ grn.location.name }}</td>
+      <td>{{ grn.received_at|date:"d M Y, H:i" }}</td>
+      <td>{% for l in grn.lines.all %}{{ l.po_line.item.name }} x{{ l.quantity_received }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="note-muted">Nothing received yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

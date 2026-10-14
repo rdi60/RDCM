@@ -1,0 +1,19 @@
+{% load static %}
+<div class="cal-toolbar">
+  <div class="cal-view-toggle">
+    <a class="btn {% if period == 'today' %}btn-primary{% endif %}" href="?period=today">Today</a>
+    <a class="btn {% if period == 'week' %}btn-primary{% endif %}" href="?period=week">This week</a>
+    <a class="btn {% if period == 'month' %}btn-primary{% endif %}" href="?period=month">This month</a>
+    <a class="btn {% if period == 'custom' %}btn-primary{% endif %}" href="?period=custom">Custom</a>
+  </div>
+  {% if period == 'custom' %}
+  <form method="get" style="display:flex;gap:6px;align-items:center">
+    <input type="hidden" name="period" value="custom">
+    <input type="date" name="start" value="{{ start|date:'Y-m-d' }}">
+    <span class="note-muted">to</span>
+    <input type="date" name="end" value="{{ end|date:'Y-m-d' }}">
+    <button type="submit" class="btn btn-sm">Apply</button>
+  </form>
+  {% endif %}
+  <span class="note-muted">{{ start|date:"d M Y" }} – {{ end|date:"d M Y" }}</span>
+</div>

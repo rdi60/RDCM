@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Verify your code · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="login-wrap">
+  <h1 style="font-size:1.2rem;margin-top:0">Enter your authenticator code</h1>
+  <p class="note-muted">Open your authenticator app and enter the current 6-digit code for {{ clinic_name }}.</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="field">
+      <label for="id_token">6-digit code</label>
+      {{ form.token }}
+      {% for error in form.token.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+      {% for error in form.non_field_errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%">Verify</button>
+  </form>
+</div>
+{% endblock %}

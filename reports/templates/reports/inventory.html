@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Inventory report · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Inventory</h1>
+  <a class="btn" href="{% url 'reports_hub' %}">All reports</a>
+</div>
+{% include "reports/_period_selector.html" %}
+
+<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+  <div class="module-card" style="max-width:200px">
+    <div class="status">Purchases this period</div>
+    <div style="font-size:1.4rem;font-weight:700">₹{{ purchase_value }}</div>
+  </div>
+  <div class="module-card" style="max-width:200px">
+    <div class="status">Consumed this period</div>
+    <div style="font-size:1.4rem;font-weight:700">₹{{ consumption_value }}</div>
+  </div>
+  <div class="module-card" style="max-width:200px">
+    <div class="status">Stock on hand now</div>
+    <div style="font-size:1.4rem;font-weight:700">₹{{ stock_value }}</div>
+  </div>
+</div>
+
+<h2 style="font-size:1rem">Low stock right now</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Item</th><th>On hand</th><th>Reorder level</th></tr></thead>
+  <tbody>
+    {% for item in low_stock_items %}
+    <tr>
+      <td>{{ item.name }}</td>
+      <td style="color:var(--bad);font-weight:700">{{ item.total_quantity }} {{ item.unit }}</td>
+      <td>{{ item.reorder_level }} {{ item.unit }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3" class="note-muted">Nothing below its reorder level.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="note-muted" style="margin-top:8px"><a href="{% url 'inventory_alerts' %}">Full alerts page</a> (also shows batches expiring soon) · <a href="{% url 'stock_levels' %}">Stock levels</a></p>
+{% endblock %}

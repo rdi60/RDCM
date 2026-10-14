@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Chair/OT utilization · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Chair/OT utilization</h1>
+  <a class="btn" href="{% url 'reports_hub' %}">All reports</a>
+</div>
+{% include "reports/_period_selector.html" %}
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Resource</th><th>Appointments</th><th>Booked</th><th>Available</th><th>Utilization</th></tr></thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.resource.name }}</td>
+      <td>{{ row.appointment_count }}</td>
+      <td>{{ row.booked_minutes }} min</td>
+      <td>{{ row.available_minutes }} min</td>
+      <td style="font-weight:700;color:{% if row.utilization >= 70 %}var(--good){% elif row.utilization >= 30 %}var(--warn){% else %}var(--fg-muted){% endif %}">{{ row.utilization }}%</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="note-muted">No active chairs or OTs.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

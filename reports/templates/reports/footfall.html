@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Footfall · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Footfall</h1>
+  <a class="btn" href="{% url 'reports_hub' %}">All reports</a>
+</div>
+{% include "reports/_period_selector.html" %}
+
+<div class="module-card" style="max-width:220px;margin-bottom:20px">
+  <div class="status">Total appointments</div>
+  <div style="font-size:1.8rem;font-weight:700">{{ total }}</div>
+</div>
+
+<div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  <div>
+    <h2 style="font-size:1rem">By status</h2>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>Status</th><th>Count</th></tr></thead>
+      <tbody>
+        {% for row in by_status %}
+        <tr><td><span class="pill status-{{ row.status }}">{{ row.label }}</span></td><td>{{ row.count }}</td></tr>
+        {% empty %}
+        <tr><td colspan="2" class="note-muted">No appointments in this period.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div>
+    <h2 style="font-size:1rem">By doctor</h2>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>Doctor</th><th>Count</th></tr></thead>
+      <tbody>
+        {% for row in by_doctor %}
+        <tr><td>{{ row.doctor__full_name }}</td><td>{{ row.count }}</td></tr>
+        {% empty %}
+        <tr><td colspan="2" class="note-muted">—</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<h2 style="font-size:1rem;margin-top:20px">By treatment</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Treatment</th><th>Count</th></tr></thead>
+  <tbody>
+    {% for row in by_treatment %}
+    <tr><td>{{ row.treatment__name }}</td><td>{{ row.count }}</td></tr>
+    {% empty %}
+    <tr><td colspan="2" class="note-muted">No treatment recorded on these appointments.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
