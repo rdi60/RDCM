@@ -128,6 +128,12 @@ AXES_RESET_ON_SUCCESS = True
 # Access control: MFA (django-otp TOTP), enforced by
 # core.middleware.RequireOTPMiddleware for every authenticated request.
 # OTP_TOTP_ISSUER is set below, once CLINIC_NAME exists.
+#
+# REQUIRE_MFA defaults to True — HIPAA's person-or-entity authentication
+# requirement (164.312(d)) needs it on for any deployment handling real
+# patient data. Set REQUIRE_MFA=False in .env only for a throwaway test
+# environment with no real PHI in it, and turn it back on before go-live.
+REQUIRE_MFA = env.bool("REQUIRE_MFA", default=True)
 
 # Field-level encryption at rest for the most sensitive free-text fields
 # (Patient.medical_history, Appointment.notes) — see core/fields.py. The key

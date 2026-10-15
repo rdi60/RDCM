@@ -17,6 +17,8 @@ class RequireOTPMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        if not settings.REQUIRE_MFA:
+            return self.get_response(request)
         user = getattr(request, "user", None)
         if user is not None and user.is_authenticated and not user.is_verified():
             if request.path_info.startswith(settings.STATIC_URL) or request.path_info.startswith(
