@@ -1,6 +1,7 @@
 import io
 
 import qrcode
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse
@@ -58,7 +59,7 @@ def mfa_setup(request):
     """First-time TOTP enrollment. Reached automatically by
     RequireOTPMiddleware for any authenticated user with no confirmed
     device yet — there's no way to opt out of MFA from here."""
-    if request.user.is_verified():
+    if not settings.REQUIRE_MFA or request.user.is_verified():
         return redirect("home")
     if request.user.totpdevice_set.filter(confirmed=True).exists():
         return redirect("mfa_verify")
@@ -101,7 +102,7 @@ def mfa_verify(request):
     """Per-session TOTP challenge for a user who already has a confirmed
     device (every login after the first, since OTPMiddleware's verified
     state doesn't persist across sessions by design)."""
-    if request.user.is_verified():
+    if not settings.REQUIRE_MFA or request.user.is_verified():
         return redirect("home")
     device = request.user.totpdevice_set.filter(confirmed=True).first()
     if not device:
