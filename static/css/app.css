@@ -145,6 +145,23 @@ body {
 }
 .field-error { color: var(--bad); font-size: .78rem; margin-top: 2px; }
 
+.field-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.field-row .field { min-width: 120px; }
+
+.field-checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.field-checkbox input[type="checkbox"] { width: 16px; height: 16px; flex-shrink: 0; }
+.field-checkbox label { font-size: .85rem; color: var(--fg); font-weight: 400; }
+
+.checklist-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 20px;
+  margin-bottom: 14px;
+}
+@media (max-width: 560px) {
+  .checklist-grid { grid-template-columns: 1fr; }
+}
+
 .btn-danger { color: var(--bad); }
 .btn-danger:hover { border-color: var(--bad); color: var(--bad); }
 

@@ -11,23 +11,54 @@ from .models import Appointment, Patient
 DATETIME_LOCAL_FORMAT = "%Y-%m-%dT%H:%M"
 
 
+MEDICAL_HISTORY_FIELDS = [
+    "mh_respiratory",
+    "mh_endocrine",
+    "mh_tobacco_use",
+    "mh_kidney_disease",
+    "mh_heart_conditions",
+    "mh_blood_disorders",
+    "mh_allergies",
+    "mh_neuro_psychiatric",
+    "mh_digestive_liver",
+]
+
+
 class PatientForm(forms.ModelForm):
     class Meta:
         model = Patient
         fields = [
+            "title",
             "full_name",
+            "date_of_birth",
+            "age_years",
+            "gender",
+            "nationality",
             "phone",
             "email",
-            "date_of_birth",
-            "gender",
             "address",
-            "medical_history",
+            "area",
+            "city",
+            "pin_code",
+            "emergency_contact",
+            "chief_complaint",
+            "has_dental_fear",
             "referral_source",
+            "referral_detail",
+            "corporate_referral",
+            *MEDICAL_HISTORY_FIELDS,
+            "current_medications",
+            "medical_history",
+            "consent_given",
+            "consent_date",
         ]
         widgets = {
             "date_of_birth": forms.DateInput(attrs={"type": "date"}),
             "address": forms.Textarea(attrs={"rows": 2}),
+            "chief_complaint": forms.Textarea(attrs={"rows": 2}),
+            "current_medications": forms.Textarea(attrs={"rows": 2}),
             "medical_history": forms.Textarea(attrs={"rows": 3}),
+            "consent_date": forms.DateInput(attrs={"type": "date"}),
         }
 
 

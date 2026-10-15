@@ -10,11 +10,28 @@
 </div>
 
 <div class="module-card" style="max-width:600px">
-  <p><strong>Date of birth:</strong> {{ patient.date_of_birth|default:"—" }}</p>
-  <p><strong>Gender:</strong> {{ patient.get_gender_display|default:"—" }}</p>
-  <p><strong>Address:</strong> {{ patient.address|default:"—" }}</p>
-  <p><strong>Medical history / allergies:</strong> {{ patient.medical_history|default:"—" }}</p>
-  <p><strong>Referral source:</strong> {{ patient.referral_source|default:"—" }}</p>
+  <p><strong>Name:</strong> {{ patient.title }} {{ patient.full_name }}</p>
+  <p><strong>Date of birth:</strong> {{ patient.date_of_birth|default:"—" }}{% if patient.age_years %} (age {{ patient.age_years }}){% endif %}</p>
+  <p><strong>Gender:</strong> {{ patient.get_gender_display|default:"—" }} · <strong>Nationality:</strong> {{ patient.nationality|default:"—" }}</p>
+  <p><strong>Address:</strong> {{ patient.address|default:"—" }}{% if patient.area %}, {{ patient.area }}{% endif %}{% if patient.city %}, {{ patient.city }}{% endif %}{% if patient.pin_code %} - {{ patient.pin_code }}{% endif %}</p>
+  <p><strong>Emergency contact:</strong> {{ patient.emergency_contact|default:"—" }}</p>
+  <p><strong>Chief dental complaint:</strong> {{ patient.chief_complaint|default:"—" }}</p>
+  <p><strong>Dental fear/phobia:</strong> {{ patient.has_dental_fear|yesno:"Yes,No" }}</p>
+  <p><strong>Referral:</strong>
+    {{ patient.get_referral_source_display|default:"—" }}{% if patient.referral_detail %} ({{ patient.referral_detail }}){% endif %}
+    {% if patient.corporate_referral %} · Corporate: {{ patient.corporate_referral }}{% endif %}
+  </p>
+
+  <p><strong>Medical history:</strong>
+    {% with flags=patient.flagged_medical_history %}
+      {% if flags %}{{ flags|join:", " }}{% else %}None flagged{% endif %}
+    {% endwith %}
+  </p>
+  <p><strong>Current medications:</strong> {{ patient.current_medications|default:"—" }}</p>
+  <p><strong>Other medical history notes:</strong> {{ patient.medical_history|default:"—" }}</p>
+
+  <p><strong>Consent:</strong> {{ patient.consent_given|yesno:"Given,Not recorded" }}{% if patient.consent_date %} on {{ patient.consent_date }}{% endif %}</p>
+  <p><strong>Registered by:</strong> {{ patient.registered_by|default:"—" }}</p>
 </div>
 
 <h2 style="font-size:1rem;margin-top:24px">Appointment history</h2>

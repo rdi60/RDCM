@@ -42,7 +42,11 @@ def patient_create(request):
     if request.method == "POST":
         form = PatientForm(request.POST)
         if form.is_valid():
-            patient = form.save()
+            patient = form.save(commit=False)
+            patient.registered_by = request.user
+            if patient.consent_given and not patient.consent_date:
+                patient.consent_date = timezone.localdate()
+            patient.save()
             messages.success(request, f"Registered {patient.full_name} ({patient.uhid}).")
             if next_url:
                 sep = "&" if "?" in next_url else "?"
