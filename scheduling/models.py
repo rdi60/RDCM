@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-from clinic.models import Doctor, Resource, Treatment
+from clinic.models import Doctor, MedicalHistoryCondition, Resource, Treatment
 from core.fields import EncryptedTextField
 
 
@@ -15,31 +15,12 @@ class Patient(models.Model):
         FEMALE = "F", "Female"
         OTHER = "O", "Other"
 
-    class Title(models.TextChoices):
-        DR = "Dr.", "Dr."
-        MR = "Mr.", "Mr."
-        MRS = "Mrs.", "Mrs."
-        MISS = "Miss", "Miss"
-        MASTER = "Master", "Master"
-        BABY = "Baby", "Baby"
-
-    class ReferralSource(models.TextChoices):
-        NEWSPRINT = "newsprint", "News print"
-        AI = "ai", "AI (ChatGPT, Gemini, etc.)"
-        WEBSITE = "website", "Clinic website"
-        SOCIAL_MEDIA = "social_media", "Social media"
-        GOOGLE = "google", "Google"
-        SIGNAGE = "signage", "Building signage"
-        CAMP = "camp", "Camp"
-        REFERENCE_OTHER = "reference_other", "Reference / other"
-
-    class CorporateReferral(models.TextChoices):
-        SHAR = "SHAR", "SHAR"
-        TVS = "TVS", "TVS"
-        WABCO = "WABCO", "WABCO"
-
     uhid = models.CharField(max_length=20, unique=True, blank=True, editable=False)
-    title = models.CharField(max_length=10, choices=Title.choices, blank=True)
+    # Title, referral source and corporate referral used to be hardcoded
+    # choices here. They're now plain text fed from admin-managed lookup
+    # tables (clinic.PatientTitle, clinic.ReferralSource) so staff can add
+    # a new option without a code change — see PatientForm.__init__.
+    title = models.CharField(max_length=20, blank=True)
     full_name = models.CharField(max_length=150)
     phone = models.CharField(max_length=20)
     email = models.EmailField(blank=True)
@@ -61,38 +42,12 @@ class Patient(models.Model):
     chief_complaint = EncryptedTextField(blank=True, help_text="Reason for this visit")
     has_dental_fear = models.BooleanField(default=False)
 
-    referral_source = models.CharField(max_length=20, choices=ReferralSource.choices, blank=True)
+    referral_source = models.CharField(max_length=100, blank=True)
     referral_detail = models.CharField(
         max_length=150, blank=True, help_text="Who referred them, if 'Reference / other'"
     )
-    corporate_referral = models.CharField(
-        max_length=10, choices=CorporateReferral.choices, blank=True
-    )
+    corporate_referral = models.CharField(max_length=100, blank=True)
 
-    # Medical history checklist, one yes/no per item on the intake form —
-    # kept as individual fields (rather than folded into medical_history)
-    # so staff can filter/flag by condition, e.g. before a procedure.
-    mh_respiratory = models.BooleanField(default=False, help_text="Asthma, TB")
-    mh_endocrine = models.BooleanField(default=False, help_text="Diabetes, thyroid")
-    mh_tobacco_use = models.BooleanField(default=False, help_text="Tobacco / smoking use")
-    mh_kidney_disease = models.BooleanField(default=False)
-    mh_heart_conditions = models.BooleanField(
-        default=False,
-        help_text=(
-            "BP, heart attack, angioplasty, rheumatic heart disease, CABG, "
-            "artificial heart valve, congenital heart disease, pacemaker"
-        ),
-    )
-    mh_blood_disorders = models.BooleanField(
-        default=False, help_text="Anaemia, transfusions, bleeding issues"
-    )
-    mh_allergies = models.BooleanField(default=False, help_text="Medicines, metals, others")
-    mh_neuro_psychiatric = models.BooleanField(
-        default=False, help_text="Stroke, epilepsy, mental health"
-    )
-    mh_digestive_liver = models.BooleanField(
-        default=False, help_text="Jaundice, hepatitis, acid reflux"
-    )
     current_medications = EncryptedTextField(blank=True)
 
     medical_history = EncryptedTextField(
@@ -112,27 +67,22 @@ class Patient(models.Model):
     class Meta:
         ordering = ["full_name"]
 
-    MEDICAL_HISTORY_LABELS = {
-        "mh_respiratory": "Respiratory (Asthma, TB)",
-        "mh_endocrine": "Endocrine (Diabetes, thyroid)",
-        "mh_tobacco_use": "Tobacco / smoking use",
-        "mh_kidney_disease": "Kidney disease",
-        "mh_heart_conditions": "Heart conditions",
-        "mh_blood_disorders": "Blood disorders",
-        "mh_allergies": "Allergies",
-        "mh_neuro_psychiatric": "Neurological / psychiatric",
-        "mh_digestive_liver": "Digestive / liver",
-    }
-
     def __str__(self):
         return f"{self.full_name} ({self.uhid})" if self.uhid else self.full_name
 
     @property
     def flagged_medical_history(self):
         """Human-readable labels for every medical-history checklist item
-        ticked 'yes' — used on the patient detail page so staff see a short
-        flagged list instead of nine yes/no rows."""
-        return [label for field, label in self.MEDICAL_HISTORY_LABELS.items() if getattr(self, field)]
+        ticked 'yes', with whichever sub-items were specified — used on the
+        patient detail page so staff see a short flagged list instead of a
+        full condition-by-condition table."""
+        labels = []
+        for entry in self.medical_conditions.select_related("condition"):
+            if entry.sub_items:
+                labels.append(f"{entry.condition.name} ({entry.sub_items})")
+            else:
+                labels.append(entry.condition.name)
+        return labels
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
@@ -140,6 +90,28 @@ class Patient(models.Model):
         if is_new and not self.uhid:
             self.uhid = f"RD-{self.pk:05d}"
             super().save(update_fields=["uhid"])
+
+
+class PatientMedicalCondition(models.Model):
+    """One ticked medical-history checklist item for a patient. A separate
+    table (rather than one boolean column per condition on Patient) so new
+    conditions can be added via Django Admin (clinic.MedicalHistoryCondition)
+    without a schema migration."""
+
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="medical_conditions")
+    condition = models.ForeignKey(MedicalHistoryCondition, on_delete=models.PROTECT, related_name="+")
+    sub_items = models.CharField(
+        max_length=255, blank=True, help_text="Which sub-items were ticked, comma-separated"
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["patient", "condition"], name="unique_patient_condition")
+        ]
+        ordering = ["condition__sort_order"]
+
+    def __str__(self):
+        return f"{self.patient} - {self.condition}"
 
 
 class Appointment(models.Model):

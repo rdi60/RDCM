@@ -1,6 +1,15 @@
 from django.contrib import admin
 
-from .models import Doctor, DoctorQualification, Resource, Specialty, Treatment
+from .models import (
+    Doctor,
+    DoctorQualification,
+    MedicalHistoryCondition,
+    PatientTitle,
+    ReferralSource,
+    Resource,
+    Specialty,
+    Treatment,
+)
 
 
 @admin.register(Specialty)
@@ -38,3 +47,26 @@ class TreatmentAdmin(admin.ModelAdmin):
     list_display = ["name", "category", "price", "default_duration_minutes", "is_active"]
     list_filter = ["category", "is_active"]
     search_fields = ["name", "category"]
+
+
+@admin.register(PatientTitle)
+class PatientTitleAdmin(admin.ModelAdmin):
+    list_display = ["name", "sort_order", "is_active"]
+    list_editable = ["sort_order", "is_active"]
+    ordering = ["sort_order", "name"]
+
+
+@admin.register(ReferralSource)
+class ReferralSourceAdmin(admin.ModelAdmin):
+    list_display = ["name", "is_corporate", "sort_order", "is_active"]
+    list_filter = ["is_corporate", "is_active"]
+    list_editable = ["sort_order", "is_active"]
+    ordering = ["sort_order", "name"]
+
+
+@admin.register(MedicalHistoryCondition)
+class MedicalHistoryConditionAdmin(admin.ModelAdmin):
+    list_display = ["name", "sort_order", "is_active"]
+    list_editable = ["sort_order", "is_active"]
+    search_fields = ["name"]
+    ordering = ["sort_order", "name"]

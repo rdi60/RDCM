@@ -107,3 +107,62 @@ class Treatment(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class PatientTitle(models.Model):
+    """An honorific option on the patient registration form (Dr., Mr., ...).
+    A plain lookup table rather than a hardcoded choices list, so staff can
+    add a new one from Django Admin without a code change or redeploy."""
+
+    name = models.CharField(max_length=20, unique=True)
+    sort_order = models.PositiveIntegerField(default=0, help_text="Lower numbers show first.")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+class ReferralSource(models.Model):
+    """A 'how did you hear about us?' option on patient registration.
+    Corporate referral partners (SHAR, TVS, ...) use the same table, flagged
+    by `is_corporate`, so both lists are managed in one place."""
+
+    name = models.CharField(max_length=100, unique=True)
+    is_corporate = models.BooleanField(
+        default=False, help_text="Shown in the separate 'Corporate referral' list instead."
+    )
+    sort_order = models.PositiveIntegerField(default=0, help_text="Lower numbers show first.")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+class MedicalHistoryCondition(models.Model):
+    """One item on the patient intake medical-history checklist. `sub_items`
+    holds the bracketed examples from the paper form (e.g. "Asthma" /
+    "TB") — one per line — shown as their own tickable options once this
+    condition is checked. Leave blank for a condition with no sub-items
+    (e.g. "Tobacco / smoking use")."""
+
+    name = models.CharField(max_length=100, unique=True)
+    sub_items = models.TextField(
+        blank=True, help_text="One sub-item per line, e.g. Asthma (new line) TB. Leave blank for none."
+    )
+    sort_order = models.PositiveIntegerField(default=0, help_text="Lower numbers show first.")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+
+    def __str__(self):
+        return self.name
+
+    def sub_item_list(self):
+        return [line.strip() for line in self.sub_items.splitlines() if line.strip()]

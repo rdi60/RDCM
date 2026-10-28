@@ -162,6 +162,10 @@ body {
   .checklist-grid { grid-template-columns: 1fr; }
 }
 
+.mh-subs { margin: 0 0 10px 24px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.mh-sub-item { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--fg-muted); font-weight: 400; }
+.mh-sub-item input[type="checkbox"] { width: 14px; height: 14px; }
+
 .btn-danger { color: var(--bad); }
 .btn-danger:hover { border-color: var(--bad); color: var(--bad); }
 

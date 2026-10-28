@@ -100,17 +100,28 @@
   </div>
 
   <h2 style="font-size:1rem;margin-top:24px">Medical history</h2>
-  <p class="note-muted">Tick any that apply.</p>
+  <p class="note-muted">Tick any that apply. (New conditions can be added from Admin &rarr; Medical history conditions.)</p>
   <div class="checklist-grid">
-    <div class="field-checkbox">{{ form.mh_respiratory }}<label for="{{ form.mh_respiratory.id_for_label }}">Respiratory (Asthma, TB)</label></div>
-    <div class="field-checkbox">{{ form.mh_blood_disorders }}<label for="{{ form.mh_blood_disorders.id_for_label }}">Blood disorders (Anaemia, transfusions, bleeding)</label></div>
-    <div class="field-checkbox">{{ form.mh_endocrine }}<label for="{{ form.mh_endocrine.id_for_label }}">Endocrine (Diabetes, thyroid)</label></div>
-    <div class="field-checkbox">{{ form.mh_allergies }}<label for="{{ form.mh_allergies.id_for_label }}">Allergies (medicines, metals, others)</label></div>
-    <div class="field-checkbox">{{ form.mh_tobacco_use }}<label for="{{ form.mh_tobacco_use.id_for_label }}">Tobacco / smoking use</label></div>
-    <div class="field-checkbox">{{ form.mh_neuro_psychiatric }}<label for="{{ form.mh_neuro_psychiatric.id_for_label }}">Neurological / psychiatric (stroke, epilepsy, mental health)</label></div>
-    <div class="field-checkbox">{{ form.mh_kidney_disease }}<label for="{{ form.mh_kidney_disease.id_for_label }}">Kidney disease</label></div>
-    <div class="field-checkbox">{{ form.mh_digestive_liver }}<label for="{{ form.mh_digestive_liver.id_for_label }}">Digestive / liver (jaundice, hepatitis, acid reflux)</label></div>
-    <div class="field-checkbox" style="grid-column:1/-1">{{ form.mh_heart_conditions }}<label for="{{ form.mh_heart_conditions.id_for_label }}">Heart conditions (BP, heart attack, angioplasty, rheumatic heart disease, CABG, artificial heart valve, congenital heart disease, pacemaker)</label></div>
+    {% for condition in medical_conditions %}
+    <div>
+      <div class="field-checkbox">
+        <input type="checkbox" name="mh_{{ condition.pk }}" id="mh_{{ condition.pk }}" {% if condition.pk in checked_condition_ids %}checked{% endif %}>
+        <label for="mh_{{ condition.pk }}">{{ condition.name }}</label>
+      </div>
+      {% with subs=condition.sub_item_list %}
+      {% if subs %}
+      <div class="mh-subs">
+        {% for sub in subs %}
+        <label class="mh-sub-item">
+          <input type="checkbox" name="mh_{{ condition.pk }}_subs" value="{{ sub }}">
+          {{ sub }}
+        </label>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+    </div>
+    {% endfor %}
   </div>
   <div class="field">
     <label for="{{ form.current_medications.id_for_label }}">List of current medications (if applicable)</label>

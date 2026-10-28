@@ -13,10 +13,10 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
 
 from audit.utils import log_view
-from clinic.models import Doctor, Resource
+from clinic.models import Doctor, MedicalHistoryCondition, Resource
 
 from .forms import AppointmentForm, PatientForm
-from .models import Appointment, Patient
+from .models import Appointment, Patient, PatientMedicalCondition
 
 SLOT_MINUTES = settings.CLINIC_SLOT_MINUTES
 
@@ -35,18 +35,38 @@ def patient_list(request):
     return render(request, "scheduling/patient_list.html", {"patients": patients[:200], "query": query})
 
 
+def _save_medical_history(request, patient):
+    """Medical history isn't on PatientForm — it's a dynamic checklist built
+    from clinic.MedicalHistoryCondition (admin-managed, can grow without a
+    code change), so it's read straight off POST and saved as
+    PatientMedicalCondition rows instead of going through the ModelForm."""
+    patient.medical_conditions.all().delete()
+    for condition in MedicalHistoryCondition.objects.filter(is_active=True):
+        if request.POST.get(f"mh_{condition.pk}"):
+            subs = request.POST.getlist(f"mh_{condition.pk}_subs")
+            PatientMedicalCondition.objects.create(
+                patient=patient, condition=condition, sub_items=", ".join(subs)
+            )
+
+
 @login_required
 @permission_required("scheduling.add_patient", raise_exception=True)
 def patient_create(request):
     next_url = request.GET.get("next", "")
+    medical_conditions = MedicalHistoryCondition.objects.filter(is_active=True)
+    checked_condition_ids = set()
     if request.method == "POST":
         form = PatientForm(request.POST)
+        checked_condition_ids = {
+            c.pk for c in medical_conditions if request.POST.get(f"mh_{c.pk}")
+        }
         if form.is_valid():
             patient = form.save(commit=False)
             patient.registered_by = request.user
             if patient.consent_given and not patient.consent_date:
                 patient.consent_date = timezone.localdate()
             patient.save()
+            _save_medical_history(request, patient)
             messages.success(request, f"Registered {patient.full_name} ({patient.uhid}).")
             if next_url:
                 sep = "&" if "?" in next_url else "?"
@@ -54,7 +74,16 @@ def patient_create(request):
             return redirect("patient_detail", pk=patient.pk)
     else:
         form = PatientForm()
-    return render(request, "scheduling/patient_form.html", {"form": form, "next": next_url})
+    return render(
+        request,
+        "scheduling/patient_form.html",
+        {
+            "form": form,
+            "next": next_url,
+            "medical_conditions": medical_conditions,
+            "checked_condition_ids": checked_condition_ids,
+        },
+    )
 
 
 @login_required

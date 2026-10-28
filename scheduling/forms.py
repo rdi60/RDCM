@@ -1,6 +1,6 @@
 from django import forms
 
-from clinic.models import Doctor, Resource, Treatment
+from clinic.models import Doctor, PatientTitle, ReferralSource, Resource, Treatment
 
 from .models import Appointment, Patient
 
@@ -9,19 +9,6 @@ from .models import Appointment, Patient
 # seconds, so without this a browser renders the field blank and a
 # submitted value fails to parse.
 DATETIME_LOCAL_FORMAT = "%Y-%m-%dT%H:%M"
-
-
-MEDICAL_HISTORY_FIELDS = [
-    "mh_respiratory",
-    "mh_endocrine",
-    "mh_tobacco_use",
-    "mh_kidney_disease",
-    "mh_heart_conditions",
-    "mh_blood_disorders",
-    "mh_allergies",
-    "mh_neuro_psychiatric",
-    "mh_digestive_liver",
-]
 
 
 class PatientForm(forms.ModelForm):
@@ -46,7 +33,6 @@ class PatientForm(forms.ModelForm):
             "referral_source",
             "referral_detail",
             "corporate_referral",
-            *MEDICAL_HISTORY_FIELDS,
             "current_medications",
             "medical_history",
             "consent_given",
@@ -60,6 +46,31 @@ class PatientForm(forms.ModelForm):
             "medical_history": forms.Textarea(attrs={"rows": 3}),
             "consent_date": forms.DateInput(attrs={"type": "date"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Title, referral source and corporate referral are admin-managed
+        # lookup tables (clinic app) rather than hardcoded choices, so staff
+        # can add a new option from Django Admin without a code change.
+        # The model fields themselves are plain CharFields; these overrides
+        # are what turn them into dropdowns sourced from those tables.
+        self.fields["title"] = forms.ChoiceField(
+            choices=[("", "--")] + [(t.name, t.name) for t in PatientTitle.objects.filter(is_active=True)],
+            required=False,
+            label="Title",
+        )
+        self.fields["referral_source"] = forms.ChoiceField(
+            choices=[("", "--")]
+            + [(r.name, r.name) for r in ReferralSource.objects.filter(is_active=True, is_corporate=False)],
+            required=False,
+            label="How did you hear about us?",
+        )
+        self.fields["corporate_referral"] = forms.ChoiceField(
+            choices=[("", "None")]
+            + [(r.name, r.name) for r in ReferralSource.objects.filter(is_active=True, is_corporate=True)],
+            required=False,
+            label="Corporate referral",
+        )
 
 
 class AppointmentForm(forms.ModelForm):

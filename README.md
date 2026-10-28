@@ -173,6 +173,7 @@ cp .env.example .env   # then edit DJANGO_SECRET_KEY and the POSTGRES_* values
 python manage.py migrate
 python manage.py seed_roles
 python manage.py seed_resources   # creates Chair 1-16 and OT 1-2
+python manage.py seed_patient_options   # titles, referral sources, medical-history checklist
 python manage.py createsuperuser
 python manage.py runserver
 ```
