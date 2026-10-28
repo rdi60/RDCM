@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-from clinic.models import Doctor, MedicalHistoryCondition, Resource, Treatment
+from clinic.models import Doctor, DrugAllergySymptom, MedicalHistoryCondition, Resource, Treatment
 from core.fields import EncryptedTextField
 
 
@@ -54,6 +54,9 @@ class Patient(models.Model):
         blank=True, help_text="Anything else not covered by the checklist above"
     )
 
+    has_drug_allergy = models.BooleanField(default=False)
+    drug_allergy_detail = EncryptedTextField(blank=True, help_text="Which drug(s) they're allergic to")
+
     consent_given = models.BooleanField(
         default=False, help_text="Patient confirmed the information above is accurate"
     )
@@ -84,6 +87,10 @@ class Patient(models.Model):
                 labels.append(entry.condition.name)
         return labels
 
+    @property
+    def drug_allergy_symptom_list(self):
+        return [entry.symptom.name for entry in self.drug_allergy_symptoms.select_related("symptom")]
+
     def save(self, *args, **kwargs):
         is_new = self._state.adding
         super().save(*args, **kwargs)
@@ -112,6 +119,26 @@ class PatientMedicalCondition(models.Model):
 
     def __str__(self):
         return f"{self.patient} - {self.condition}"
+
+
+class PatientDrugAllergySymptom(models.Model):
+    """One ticked symptom on a patient's drug-allergy checklist. Same
+    join-table pattern as PatientMedicalCondition, so new symptoms can be
+    added via Django Admin (clinic.DrugAllergySymptom) without a migration."""
+
+    patient = models.ForeignKey(
+        Patient, on_delete=models.CASCADE, related_name="drug_allergy_symptoms"
+    )
+    symptom = models.ForeignKey(DrugAllergySymptom, on_delete=models.PROTECT, related_name="+")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["patient", "symptom"], name="unique_patient_drug_allergy_symptom")
+        ]
+        ordering = ["symptom__sort_order"]
+
+    def __str__(self):
+        return f"{self.patient} - {self.symptom}"
 
 
 class Appointment(models.Model):

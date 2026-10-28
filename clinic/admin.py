@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import (
     Doctor,
     DoctorQualification,
+    DrugAllergySymptom,
     MedicalHistoryCondition,
     PatientTitle,
     ReferralSource,
@@ -66,6 +67,14 @@ class ReferralSourceAdmin(admin.ModelAdmin):
 
 @admin.register(MedicalHistoryCondition)
 class MedicalHistoryConditionAdmin(admin.ModelAdmin):
+    list_display = ["name", "sort_order", "is_active"]
+    list_editable = ["sort_order", "is_active"]
+    search_fields = ["name"]
+    ordering = ["sort_order", "name"]
+
+
+@admin.register(DrugAllergySymptom)
+class DrugAllergySymptomAdmin(admin.ModelAdmin):
     list_display = ["name", "sort_order", "is_active"]
     list_editable = ["sort_order", "is_active"]
     search_fields = ["name"]

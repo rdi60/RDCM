@@ -166,6 +166,29 @@ body {
 .mh-sub-item { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--fg-muted); font-weight: 400; }
 .mh-sub-item input[type="checkbox"] { width: 14px; height: 14px; }
 
+.radio-list { list-style: none; display: flex; gap: 20px; padding: 0; margin: 0; }
+.radio-list div { display: inline-flex; }
+.radio-list label { display: flex; align-items: center; gap: 6px; font-weight: 400; font-size: .85rem; cursor: pointer; }
+
+.allergy-banner {
+  background: var(--bad-soft);
+  color: var(--bad);
+  border: 1px solid var(--bad);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 700;
+  font-size: .9rem;
+  margin-bottom: 14px;
+  max-width: 600px;
+}
+
+.allergy-badge {
+  background: var(--bad-soft);
+  color: var(--bad);
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
 .btn-danger { color: var(--bad); }
 .btn-danger:hover { border-color: var(--bad); color: var(--bad); }
 

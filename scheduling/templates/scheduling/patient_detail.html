@@ -9,6 +9,13 @@
   <a class="btn btn-primary" href="{% url 'appointment_create' %}?patient={{ patient.pk }}">+ Book appointment</a>
 </div>
 
+{% if patient.has_drug_allergy %}
+<div class="allergy-banner">
+  ⚠ Drug allergy{% if patient.drug_allergy_detail %}: {{ patient.drug_allergy_detail }}{% endif %}
+  {% with symptoms=patient.drug_allergy_symptom_list %}{% if symptoms %} — Symptoms: {{ symptoms|join:", " }}{% endif %}{% endwith %}
+</div>
+{% endif %}
+
 <div class="module-card" style="max-width:600px">
   <p><strong>Name:</strong> {{ patient.title }} {{ patient.full_name }}</p>
   <p><strong>Date of birth:</strong> {{ patient.date_of_birth|default:"—" }}{% if patient.age_years %} (age {{ patient.age_years }}){% endif %}</p>
@@ -18,7 +25,7 @@
   <p><strong>Chief dental complaint:</strong> {{ patient.chief_complaint|default:"—" }}</p>
   <p><strong>Dental fear/phobia:</strong> {{ patient.has_dental_fear|yesno:"Yes,No" }}</p>
   <p><strong>Referral:</strong>
-    {{ patient.get_referral_source_display|default:"—" }}{% if patient.referral_detail %} ({{ patient.referral_detail }}){% endif %}
+    {{ patient.referral_source|default:"—" }}{% if patient.referral_detail %} ({{ patient.referral_detail }}){% endif %}
     {% if patient.corporate_referral %} · Corporate: {{ patient.corporate_referral }}{% endif %}
   </p>
 

@@ -132,6 +132,39 @@
     {{ form.medical_history }}
   </div>
 
+  <h2 style="font-size:1rem;margin-top:24px">Drug allergies</h2>
+  <div class="field-row" style="align-items:center">
+    <label style="font-weight:600;font-size:.85rem;margin:0">Do you have drug allergies?</label>
+    {{ form.has_drug_allergy }}
+  </div>
+  <div id="drug-allergy-detail" style="display:none">
+    <div class="field" style="max-width:360px;margin-top:10px">
+      <label for="{{ form.drug_allergy_detail.id_for_label }}">Allergic to</label>
+      {{ form.drug_allergy_detail }}
+    </div>
+    <p class="note-muted" style="margin-bottom:6px">Allergic symptoms:</p>
+    <div class="checklist-grid">
+      {% for symptom in drug_allergy_symptoms %}
+      <div class="field-checkbox">
+        <input type="checkbox" name="da_{{ symptom.pk }}" id="da_{{ symptom.pk }}" {% if symptom.pk in checked_symptom_ids %}checked{% endif %}>
+        <label for="da_{{ symptom.pk }}">{{ symptom.name }}</label>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <script>
+    (function () {
+      var detail = document.getElementById("drug-allergy-detail");
+      var radios = document.querySelectorAll('input[name="has_drug_allergy"]');
+      function sync() {
+        var checked = document.querySelector('input[name="has_drug_allergy"]:checked');
+        detail.style.display = checked && checked.value === "True" ? "block" : "none";
+      }
+      radios.forEach(function (r) { r.addEventListener("change", sync); });
+      sync();
+    })();
+  </script>
+
   <h2 style="font-size:1rem;margin-top:24px">Consent</h2>
   <div class="field-checkbox">
     {{ form.consent_given }}

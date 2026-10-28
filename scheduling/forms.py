@@ -35,6 +35,8 @@ class PatientForm(forms.ModelForm):
             "corporate_referral",
             "current_medications",
             "medical_history",
+            "has_drug_allergy",
+            "drug_allergy_detail",
             "consent_given",
             "consent_date",
         ]
@@ -44,6 +46,7 @@ class PatientForm(forms.ModelForm):
             "chief_complaint": forms.Textarea(attrs={"rows": 2}),
             "current_medications": forms.Textarea(attrs={"rows": 2}),
             "medical_history": forms.Textarea(attrs={"rows": 3}),
+            "drug_allergy_detail": forms.TextInput(attrs={"placeholder": "Enter drug allergy"}),
             "consent_date": forms.DateInput(attrs={"type": "date"}),
         }
 
@@ -70,6 +73,17 @@ class PatientForm(forms.ModelForm):
             + [(r.name, r.name) for r in ReferralSource.objects.filter(is_active=True, is_corporate=True)],
             required=False,
             label="Corporate referral",
+        )
+        # Yes/No toggle rather than a plain checkbox, to match the paper
+        # form; which drug(s) and which symptoms are only relevant once
+        # "Yes" is picked, so they stay template-side next to this field.
+        self.fields["has_drug_allergy"] = forms.TypedChoiceField(
+            choices=[(False, "No"), (True, "Yes")],
+            coerce=lambda v: str(v) == "True",
+            widget=forms.RadioSelect(attrs={"class": "radio-list"}),
+            required=False,
+            initial=False,
+            label="Do you have drug allergies?",
         )
 
 

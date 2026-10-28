@@ -17,7 +17,10 @@
   <tbody>
     {% for p in patients %}
     <tr>
-      <td><a href="{% url 'patient_detail' p.pk %}">{{ p.full_name }}</a></td>
+      <td>
+        <a href="{% url 'patient_detail' p.pk %}">{{ p.full_name }}</a>
+        {% if p.has_drug_allergy %}<span class="pill allergy-badge" title="Drug allergy">⚠ Allergy</span>{% endif %}
+      </td>
       <td>{{ p.uhid }}</td>
       <td>{{ p.phone }}</td>
       <td>{{ p.email|default:"—" }}</td>

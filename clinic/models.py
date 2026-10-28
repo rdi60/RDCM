@@ -166,3 +166,20 @@ class MedicalHistoryCondition(models.Model):
 
     def sub_item_list(self):
         return [line.strip() for line in self.sub_items.splitlines() if line.strip()]
+
+
+class DrugAllergySymptom(models.Model):
+    """One tickable symptom on the drug-allergy checklist (Skin Rashes,
+    Swelling, ...), shown when a patient answers 'yes' to having a drug
+    allergy. Admin-managed like the other patient-registration lookups, so
+    new symptoms can be added without a code change."""
+
+    name = models.CharField(max_length=100, unique=True)
+    sort_order = models.PositiveIntegerField(default=0, help_text="Lower numbers show first.")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+
+    def __str__(self):
+        return self.name

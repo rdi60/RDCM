@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from clinic.models import MedicalHistoryCondition, PatientTitle, ReferralSource
+from clinic.models import DrugAllergySymptom, MedicalHistoryCondition, PatientTitle, ReferralSource
 
 TITLES = ["Dr.", "Mr.", "Mrs.", "Miss", "Master", "Baby"]
 
@@ -33,6 +33,8 @@ MEDICAL_HISTORY_CONDITIONS = [
     ),
 ]
 
+DRUG_ALLERGY_SYMPTOMS = ["Skin Rashes", "Abdomen Trouble", "Swelling", "Life Threatening"]
+
 
 class Command(BaseCommand):
     help = (
@@ -63,3 +65,7 @@ class Command(BaseCommand):
                 name=name, defaults={"sort_order": i, "sub_items": sub_items}
             )
             self.stdout.write(f"Medical history condition {name}: {'created' if created else 'already exists'}")
+
+        for i, name in enumerate(DRUG_ALLERGY_SYMPTOMS):
+            _, created = DrugAllergySymptom.objects.get_or_create(name=name, defaults={"sort_order": i})
+            self.stdout.write(f"Drug allergy symptom {name}: {'created' if created else 'already exists'}")

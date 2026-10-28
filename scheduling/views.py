@@ -13,10 +13,10 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
 
 from audit.utils import log_view
-from clinic.models import Doctor, MedicalHistoryCondition, Resource
+from clinic.models import Doctor, DrugAllergySymptom, MedicalHistoryCondition, Resource
 
 from .forms import AppointmentForm, PatientForm
-from .models import Appointment, Patient, PatientMedicalCondition
+from .models import Appointment, Patient, PatientDrugAllergySymptom, PatientMedicalCondition
 
 SLOT_MINUTES = settings.CLINIC_SLOT_MINUTES
 
@@ -49,16 +49,32 @@ def _save_medical_history(request, patient):
             )
 
 
+def _save_drug_allergy_symptoms(request, patient):
+    """Same admin-managed-checklist pattern as _save_medical_history, for
+    the drug-allergy symptoms (clinic.DrugAllergySymptom)."""
+    patient.drug_allergy_symptoms.all().delete()
+    if not patient.has_drug_allergy:
+        return
+    for symptom in DrugAllergySymptom.objects.filter(is_active=True):
+        if request.POST.get(f"da_{symptom.pk}"):
+            PatientDrugAllergySymptom.objects.create(patient=patient, symptom=symptom)
+
+
 @login_required
 @permission_required("scheduling.add_patient", raise_exception=True)
 def patient_create(request):
     next_url = request.GET.get("next", "")
     medical_conditions = MedicalHistoryCondition.objects.filter(is_active=True)
+    drug_allergy_symptoms = DrugAllergySymptom.objects.filter(is_active=True)
     checked_condition_ids = set()
+    checked_symptom_ids = set()
     if request.method == "POST":
         form = PatientForm(request.POST)
         checked_condition_ids = {
             c.pk for c in medical_conditions if request.POST.get(f"mh_{c.pk}")
+        }
+        checked_symptom_ids = {
+            s.pk for s in drug_allergy_symptoms if request.POST.get(f"da_{s.pk}")
         }
         if form.is_valid():
             patient = form.save(commit=False)
@@ -67,6 +83,7 @@ def patient_create(request):
                 patient.consent_date = timezone.localdate()
             patient.save()
             _save_medical_history(request, patient)
+            _save_drug_allergy_symptoms(request, patient)
             messages.success(request, f"Registered {patient.full_name} ({patient.uhid}).")
             if next_url:
                 sep = "&" if "?" in next_url else "?"
@@ -82,6 +99,8 @@ def patient_create(request):
             "next": next_url,
             "medical_conditions": medical_conditions,
             "checked_condition_ids": checked_condition_ids,
+            "drug_allergy_symptoms": drug_allergy_symptoms,
+            "checked_symptom_ids": checked_symptom_ids,
         },
     )
 
