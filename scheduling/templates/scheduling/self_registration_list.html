@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Self sign-ups · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Patient self sign-ups</h1>
+</div>
+<p class="note-muted">Submitted from the kiosk/phone registration page. Review each one, then approve to assign a UHID, or discard it (duplicate, spam, abandoned).</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Name</th><th>Phone</th><th>Submitted</th><th></th></tr></thead>
+  <tbody>
+    {% for r in registrations %}
+    <tr>
+      <td>{{ r.full_name }}{% if r.has_drug_allergy %}<span class="pill allergy-badge" title="Drug allergy">⚠ Allergy</span>{% endif %}</td>
+      <td>{{ r.phone }}</td>
+      <td>{{ r.submitted_at|date:"d M Y, H:i" }}</td>
+      <td><a class="btn btn-sm btn-primary" href="{% url 'self_registration_review' r.pk %}">Review</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="note-muted">No sign-ups waiting on review.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

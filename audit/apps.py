@@ -8,6 +8,7 @@ from django.apps import AppConfig
 TRACKED_APP_MODELS = [
     ("scheduling", "Patient"),
     ("scheduling", "Appointment"),
+    ("scheduling", "SelfRegistration"),
     ("billing", "Invoice"),
     ("billing", "InvoiceLineItem"),
     ("billing", "Payment"),

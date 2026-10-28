@@ -1,0 +1,25 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thank you · {{ clinic_name }}</title>
+  <link rel="stylesheet" href="{% static 'css/selfreg.css' %}">
+</head>
+<body class="selfreg">
+<div class="selfreg-page">
+  <div class="selfreg-card">
+    <div class="selfreg-thanks">
+      <div class="tick-circle">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="#f2650c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1 style="font-size:21px;font-weight:800;margin:0 0 10px;">Thank you!</h1>
+      <p style="font-size:14.5px;color:#8a6a4f;line-height:1.6;max-width:300px;margin:0 auto;">
+        Your registration has been received. Please take a seat — our staff will call you shortly to confirm your details and check in.
+      </p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

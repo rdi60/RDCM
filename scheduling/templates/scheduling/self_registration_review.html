@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Review sign-up · {{ clinic_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ registration.full_name }}</h1>
+</div>
+<p class="note-muted">Submitted {{ registration.submitted_at|date:"d M Y, H:i" }}. Check for duplicates and obvious typos before approving — approving creates the real patient record and assigns a UHID.</p>
+
+{% if registration.has_drug_allergy %}
+<div class="allergy-banner">
+  ⚠ Drug allergy{% if registration.drug_allergy_detail %}: {{ registration.drug_allergy_detail }}{% endif %}
+  {% if ticked_symptoms %} — Symptoms: {{ ticked_symptoms|join:", " }}{% endif %}
+</div>
+{% endif %}
+
+<div class="module-card" style="max-width:600px">
+  <p><strong>Name:</strong> {{ registration.title }} {{ registration.full_name }}</p>
+  <p><strong>Date of birth:</strong> {{ registration.date_of_birth|default:"—" }}{% if registration.age_years %} (age {{ registration.age_years }}){% endif %}</p>
+  <p><strong>Gender:</strong> {{ registration.get_gender_display|default:"—" }} · <strong>Nationality:</strong> {{ registration.nationality|default:"—" }}</p>
+  <p><strong>Phone:</strong> {{ registration.phone }}{% if registration.email %} · {{ registration.email }}{% endif %}</p>
+  <p><strong>Address:</strong> {{ registration.address|default:"—" }}{% if registration.area %}, {{ registration.area }}{% endif %}{% if registration.city %}, {{ registration.city }}{% endif %}{% if registration.pin_code %} - {{ registration.pin_code }}{% endif %}</p>
+  <p><strong>Emergency contact:</strong> {{ registration.emergency_contact|default:"—" }}</p>
+  <p><strong>Chief dental complaint:</strong> {{ registration.chief_complaint|default:"—" }}</p>
+  <p><strong>Dental fear/phobia:</strong> {{ registration.has_dental_fear|yesno:"Yes,No" }}</p>
+  <p><strong>Referral:</strong>
+    {{ registration.referral_source|default:"—" }}{% if registration.referral_detail %} ({{ registration.referral_detail }}){% endif %}
+    {% if registration.corporate_referral %} · Corporate: {{ registration.corporate_referral }}{% endif %}
+  </p>
+  <p><strong>Medical history:</strong>
+    {% if ticked_conditions %}
+      {% for c in ticked_conditions %}{{ c.name }}{% if c.sub_items %} ({{ c.sub_items }}){% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}
+    {% else %}None flagged{% endif %}
+  </p>
+  <p><strong>Current medications:</strong> {{ registration.current_medications|default:"—" }}</p>
+  <p><strong>Other medical history notes:</strong> {{ registration.medical_history|default:"—" }}</p>
+  <p><strong>Consent:</strong> {{ registration.consent_given|yesno:"Given,Not recorded" }}</p>
+  {% if registration.signature %}
+  <p><strong>Signature:</strong></p>
+  <img src="{{ registration.signature }}" alt="Patient signature" style="max-width:260px;border:1px solid var(--border);border-radius:8px;background:#fff">
+  {% endif %}
+</div>
+
+<form method="post" style="margin-top:18px;display:flex;gap:10px">
+  {% csrf_token %}
+  <button type="submit" name="action" value="approve" class="btn btn-primary">Approve &amp; create patient</button>
+  <button type="submit" name="action" value="discard" class="btn btn-danger" onclick="return confirm('Discard this sign-up? This can\'t be undone.')">Discard</button>
+</form>
+{% endblock %}

@@ -15,8 +15,14 @@ from django.utils.dateparse import parse_date, parse_datetime
 from audit.utils import log_view
 from clinic.models import Doctor, DrugAllergySymptom, MedicalHistoryCondition, Resource
 
-from .forms import AppointmentForm, PatientForm
-from .models import Appointment, Patient, PatientDrugAllergySymptom, PatientMedicalCondition
+from .forms import AppointmentForm, PatientForm, SelfRegistrationForm
+from .models import (
+    Appointment,
+    Patient,
+    PatientDrugAllergySymptom,
+    PatientMedicalCondition,
+    SelfRegistration,
+)
 
 SLOT_MINUTES = settings.CLINIC_SLOT_MINUTES
 
@@ -115,6 +121,153 @@ def patient_detail(request, pk):
     )
     return render(
         request, "scheduling/patient_detail.html", {"patient": patient, "appointments": appointments}
+    )
+
+
+# ---- Patient self-registration (public, no login) -----------------------
+
+def self_register(request):
+    """The kiosk/phone page a patient fills in themselves when enrolling —
+    no login, reachable from the public internet. Deliberately saves to
+    SelfRegistration (a staging record) rather than Patient directly, so
+    front-desk staff can catch duplicates/typos and assign the UHID before
+    anything anonymous becomes a real patient chart."""
+    medical_conditions = MedicalHistoryCondition.objects.filter(is_active=True)
+    drug_allergy_symptoms = DrugAllergySymptom.objects.filter(is_active=True)
+    checked_condition_ids = set()
+    checked_symptom_ids = set()
+    signature_missing = False
+
+    if request.method == "POST":
+        # Hidden field no real visitor sees or fills in — a basic deterrent
+        # against the simplest form-filling bots on a page that needs no
+        # login to reach.
+        if request.POST.get("website"):
+            return redirect("self_register_done")
+
+        form = SelfRegistrationForm(request.POST)
+        checked_condition_ids = {c.pk for c in medical_conditions if request.POST.get(f"mh_{c.pk}")}
+        checked_symptom_ids = {s.pk for s in drug_allergy_symptoms if request.POST.get(f"da_{s.pk}")}
+        signature = request.POST.get("signature_data", "")
+        signature_missing = not signature
+
+        if form.is_valid() and not signature_missing:
+            registration = form.save(commit=False)
+            registration.signature = signature
+            registration.medical_conditions = [
+                {"id": c.pk, "sub_items": ", ".join(request.POST.getlist(f"mh_{c.pk}_subs"))}
+                for c in medical_conditions
+                if c.pk in checked_condition_ids
+            ]
+            if registration.has_drug_allergy:
+                registration.drug_allergy_symptoms = list(checked_symptom_ids)
+            registration.save()
+            return redirect("self_register_done")
+        if signature_missing:
+            messages.error(request, "Please sign before submitting.")
+    else:
+        form = SelfRegistrationForm()
+
+    return render(
+        request,
+        "scheduling/self_register.html",
+        {
+            "form": form,
+            "medical_conditions": medical_conditions,
+            "checked_condition_ids": checked_condition_ids,
+            "drug_allergy_symptoms": drug_allergy_symptoms,
+            "checked_symptom_ids": checked_symptom_ids,
+        },
+    )
+
+
+def self_register_done(request):
+    return render(request, "scheduling/self_register_done.html")
+
+
+@login_required
+@permission_required("scheduling.add_patient", raise_exception=True)
+def self_registration_list(request):
+    registrations = SelfRegistration.objects.filter(status=SelfRegistration.Status.PENDING)
+    return render(request, "scheduling/self_registration_list.html", {"registrations": registrations})
+
+
+@login_required
+@permission_required("scheduling.add_patient", raise_exception=True)
+def self_registration_review(request, pk):
+    registration = get_object_or_404(SelfRegistration, pk=pk, status=SelfRegistration.Status.PENDING)
+    conditions_by_id = {c.pk: c for c in MedicalHistoryCondition.objects.all()}
+    symptoms_by_id = {s.pk: s for s in DrugAllergySymptom.objects.all()}
+    ticked_conditions = [
+        {"name": conditions_by_id[c["id"]].name, "sub_items": c.get("sub_items", "")}
+        for c in registration.medical_conditions
+        if c["id"] in conditions_by_id
+    ]
+    ticked_symptoms = [
+        symptoms_by_id[sid].name for sid in registration.drug_allergy_symptoms if sid in symptoms_by_id
+    ]
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "approve":
+            patient = Patient.objects.create(
+                title=registration.title,
+                full_name=registration.full_name,
+                phone=registration.phone,
+                email=registration.email,
+                date_of_birth=registration.date_of_birth,
+                age_years=registration.age_years,
+                gender=registration.gender,
+                nationality=registration.nationality,
+                address=registration.address,
+                area=registration.area,
+                city=registration.city,
+                pin_code=registration.pin_code,
+                emergency_contact=registration.emergency_contact,
+                chief_complaint=registration.chief_complaint,
+                has_dental_fear=registration.has_dental_fear,
+                referral_source=registration.referral_source,
+                referral_detail=registration.referral_detail,
+                corporate_referral=registration.corporate_referral,
+                current_medications=registration.current_medications,
+                medical_history=registration.medical_history,
+                has_drug_allergy=registration.has_drug_allergy,
+                drug_allergy_detail=registration.drug_allergy_detail,
+                signature=registration.signature,
+                consent_given=registration.consent_given,
+                consent_date=registration.submitted_at.date() if registration.consent_given else None,
+                registered_by=request.user,
+            )
+            for cond in registration.medical_conditions:
+                condition = conditions_by_id.get(cond["id"])
+                if condition:
+                    PatientMedicalCondition.objects.create(
+                        patient=patient, condition=condition, sub_items=cond.get("sub_items", "")
+                    )
+            if registration.has_drug_allergy:
+                for sid in registration.drug_allergy_symptoms:
+                    symptom = symptoms_by_id.get(sid)
+                    if symptom:
+                        PatientDrugAllergySymptom.objects.create(patient=patient, symptom=symptom)
+            registration.status = SelfRegistration.Status.APPROVED
+            registration.reviewed_by = request.user
+            registration.reviewed_at = timezone.now()
+            registration.patient = patient
+            registration.save()
+            messages.success(request, f"Approved — registered {patient.full_name} ({patient.uhid}).")
+            return redirect("patient_detail", pk=patient.pk)
+        elif action == "discard":
+            registration.status = SelfRegistration.Status.DISCARDED
+            registration.reviewed_by = request.user
+            registration.reviewed_at = timezone.now()
+            registration.save()
+            messages.success(request, "Discarded.")
+            return redirect("self_registration_list")
+
+    return render(
+        request,
+        "scheduling/self_registration_review.html",
+        {"registration": registration, "ticked_conditions": ticked_conditions, "ticked_symptoms": ticked_symptoms},
     )
 
 

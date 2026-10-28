@@ -17,6 +17,7 @@
       <a href="{% url 'invoice_list' %}">Billing</a>
       <a href="{% url 'stock_levels' %}">Inventory</a>
       <a href="{% url 'reports_hub' %}">Reports</a>
+      {% if perms.scheduling.add_patient %}<a href="{% url 'self_registration_list' %}">Self sign-ups</a>{% endif %}
       {% if hrms_url %}<a href="{{ hrms_url }}" target="_blank" rel="noopener">HRMS</a>{% endif %}
       {% if user.is_staff %}<a href="{% url 'admin:index' %}">Admin</a>{% endif %}
       <span>{{ user }}</span>

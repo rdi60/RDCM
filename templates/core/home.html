@@ -21,7 +21,7 @@
   {% if m.available %}
   <a class="module-card" href="{{ m.url }}" style="text-decoration:none;color:inherit;display:block">
     <strong>{{ m.name }}</strong>
-    <div class="status" style="color:var(--good)">Open →</div>
+    <div class="status" style="color:var(--good)">{{ m.status_label|default:"Open →" }}</div>
   </a>
   {% else %}
   <div class="module-card">

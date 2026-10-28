@@ -38,6 +38,10 @@
   <p><strong>Other medical history notes:</strong> {{ patient.medical_history|default:"—" }}</p>
 
   <p><strong>Consent:</strong> {{ patient.consent_given|yesno:"Given,Not recorded" }}{% if patient.consent_date %} on {{ patient.consent_date }}{% endif %}</p>
+  {% if patient.signature %}
+  <p><strong>Signature:</strong></p>
+  <img src="{{ patient.signature }}" alt="Patient signature" style="max-width:260px;border:1px solid var(--border);border-radius:8px;background:#fff">
+  {% endif %}
   <p><strong>Registered by:</strong> {{ patient.registered_by|default:"—" }}</p>
 </div>
 

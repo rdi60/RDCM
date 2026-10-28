@@ -61,6 +61,7 @@ class Patient(models.Model):
         default=False, help_text="Patient confirmed the information above is accurate"
     )
     consent_date = models.DateField(null=True, blank=True)
+    signature = EncryptedTextField(blank=True, help_text="Base64 PNG data URI of the patient's signature")
     registered_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
@@ -139,6 +140,75 @@ class PatientDrugAllergySymptom(models.Model):
 
     def __str__(self):
         return f"{self.patient} - {self.symptom}"
+
+
+class SelfRegistration(models.Model):
+    """A patient's own kiosk/phone submission from the public, no-login
+    self-registration page — held here for front-desk review (catching
+    duplicates/typos and assigning the UHID) before it becomes a real
+    Patient record. Ticked medical-history conditions and drug-allergy
+    symptoms are kept as plain id lists (JSONField) rather than through
+    relations, since this is a short-lived staging record, not the
+    permanent one — they're expanded into real PatientMedicalCondition /
+    PatientDrugAllergySymptom rows only once approved."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending review"
+        APPROVED = "approved", "Approved"
+        DISCARDED = "discarded", "Discarded"
+
+    title = models.CharField(max_length=20, blank=True)
+    full_name = models.CharField(max_length=150)
+    phone = models.CharField(max_length=20)
+    email = models.EmailField(blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    age_years = models.PositiveIntegerField(null=True, blank=True)
+    gender = models.CharField(max_length=1, choices=Patient.Gender.choices, blank=True)
+    nationality = models.CharField(max_length=50, blank=True, default="Indian")
+
+    address = models.TextField(blank=True)
+    area = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    pin_code = models.CharField(max_length=10, blank=True)
+    emergency_contact = models.CharField(max_length=150, blank=True)
+
+    chief_complaint = EncryptedTextField(blank=True)
+    has_dental_fear = models.BooleanField(default=False)
+
+    referral_source = models.CharField(max_length=100, blank=True)
+    referral_detail = models.CharField(max_length=150, blank=True)
+    corporate_referral = models.CharField(max_length=100, blank=True)
+
+    medical_conditions = models.JSONField(
+        default=list, blank=True, help_text="[{id, sub_items}, ...] — clinic.MedicalHistoryCondition ids ticked"
+    )
+    current_medications = EncryptedTextField(blank=True)
+    medical_history = EncryptedTextField(blank=True)
+
+    has_drug_allergy = models.BooleanField(default=False)
+    drug_allergy_detail = EncryptedTextField(blank=True)
+    drug_allergy_symptoms = models.JSONField(
+        default=list, blank=True, help_text="clinic.DrugAllergySymptom ids ticked"
+    )
+
+    consent_given = models.BooleanField(default=False)
+    signature = EncryptedTextField(blank=True, help_text="Base64 PNG data URI of the patient's signature")
+
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    patient = models.ForeignKey(
+        Patient, on_delete=models.SET_NULL, null=True, blank=True, related_name="self_registrations"
+    )
+
+    class Meta:
+        ordering = ["-submitted_at"]
+
+    def __str__(self):
+        return f"{self.full_name} ({self.get_status_display()})"
 
 
 class Appointment(models.Model):

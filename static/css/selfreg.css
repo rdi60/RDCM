@@ -1,0 +1,69 @@
+body.selfreg {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  background: #ffffff;
+  color: #1c1917;
+}
+.selfreg * { box-sizing: border-box; }
+.selfreg input, .selfreg textarea, .selfreg select, .selfreg button { font: inherit; }
+.selfreg input[type="text"], .selfreg input[type="date"], .selfreg input[type="tel"],
+.selfreg input[type="email"], .selfreg input[type="number"], .selfreg textarea, .selfreg select {
+  width: 100%; min-height: 46px; padding: 10px 12px; border-radius: 10px;
+  border: 1.5px solid #ecd9c2; background: #fff; color: #1c1917; font-size: 16px;
+}
+.selfreg textarea { min-height: 72px; resize: vertical; }
+.selfreg input::placeholder, .selfreg textarea::placeholder { color: #c7b9a8; }
+
+.selfreg-page { width: 100%; min-height: 100vh; display: flex; justify-content: center; background: #fff; }
+.selfreg-card { width: 100%; max-width: 460px; padding: 22px 18px 60px; }
+
+.selfreg .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.selfreg .field label { font-size: 12.5px; font-weight: 700; color: #8a6a4f; text-transform: uppercase; letter-spacing: .02em; }
+.selfreg .row { display: flex; gap: 12px; }
+.selfreg .row > .field { flex: 1; min-width: 0; }
+
+.selfreg .section-head { display: flex; align-items: baseline; gap: 10px; margin: 30px 0 14px; padding-top: 20px; border-top: 1px solid #f3e9db; }
+.selfreg .section-head:first-of-type { margin-top: 22px; padding-top: 0; border-top: none; }
+.selfreg .section-num { font-size: 12px; font-weight: 800; color: #fff; background: #f2650c; width: 22px; height: 22px; border-radius: 999px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.selfreg .section-title { font-size: 15px; font-weight: 800; color: #1c1917; }
+
+.selfreg .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.selfreg .chip-row input[type="radio"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.selfreg .chip-row label.chip {
+  min-height: 44px; padding: 10px 16px; border-radius: 999px; font-size: 14px; font-weight: 700;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  border: 1.5px solid #ecd9c2; background: #fff; color: #1c1917;
+}
+.selfreg .chip-row input[type="radio"]:checked + label.chip { background: #f2650c; color: #fff; border-color: #f2650c; }
+.selfreg .chip-row input[type="radio"]:focus-visible + label.chip { outline: 2px solid #f2650c; outline-offset: 2px; }
+
+.selfreg .mh-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 18px; margin-bottom: 14px; }
+@media (max-width: 400px) { .selfreg .mh-grid { grid-template-columns: 1fr; } }
+.selfreg .mh-item { display: flex; align-items: center; gap: 10px; padding: 9px 2px 2px; cursor: pointer; }
+.selfreg .mh-item input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; accent-color: #f2650c; }
+.selfreg .mh-item span { font-size: 14px; }
+.selfreg .mh-subs { margin: 0 0 10px 30px; display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.selfreg .mh-sub-item { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.selfreg .mh-sub-item input[type="checkbox"] { width: 16px; height: 16px; flex-shrink: 0; accent-color: #f2650c; }
+.selfreg .mh-sub-item span { font-size: 13px; color: #44403c; }
+
+.selfreg .sig-pad { position: relative; border: 1.5px dashed #ecd9c2; border-radius: 10px; background: #fffaf4; touch-action: none; overflow: hidden; height: 140px; }
+.selfreg .sig-pad canvas { display: block; width: 100%; height: 100%; }
+.selfreg .sig-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #c7b9a8; font-size: 13.5px; pointer-events: none; }
+.selfreg .link-btn { background: none; border: none; color: #f2650c; font-size: 13px; font-weight: 700; padding: 6px 0; cursor: pointer; }
+
+.selfreg .consent-box { display: flex; gap: 12px; align-items: flex-start; background: #fff8f0; border: 1px solid #f6e3cc; border-radius: 12px; padding: 14px; margin-bottom: 20px; cursor: pointer; }
+.selfreg .consent-box input { width: 22px; height: 22px; margin-top: 1px; flex-shrink: 0; accent-color: #f2650c; }
+
+.selfreg .submit-btn { width: 100%; min-height: 54px; border-radius: 14px; border: none; background: #f2650c; color: #fff; font-size: 16px; font-weight: 800; cursor: pointer; }
+.selfreg .submit-btn:active { background: #d9560a; }
+.selfreg .assist-note { font-size: 13px; color: #8a6a4f; text-align: center; margin-top: 14px; line-height: 1.5; }
+
+.selfreg .form-error { background: #f9e4e1; color: #c0392b; border: 1px solid #c0392b; border-radius: 10px; padding: 10px 14px; font-size: 13.5px; font-weight: 700; margin-bottom: 16px; }
+.selfreg .field-error { color: #c0392b; font-size: 12.5px; margin-top: -2px; }
+
+.selfreg-thanks { padding-top: 18%; text-align: center; }
+.selfreg-thanks .tick-circle {
+  width: 72px; height: 72px; border-radius: 999px; background: #fff4ea;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+}

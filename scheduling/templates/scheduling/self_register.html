@@ -1,0 +1,252 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New Patient Registration · {{ clinic_name }}</title>
+  <link rel="stylesheet" href="{% static 'css/selfreg.css' %}">
+</head>
+<body class="selfreg">
+<div class="selfreg-page">
+  <div class="selfreg-card">
+
+    <div style="font-size:20px;font-weight:900;letter-spacing:-.01em;text-align:center;">{{ clinic_name }}</div>
+    <h1 style="font-size:22px;font-weight:800;margin:14px 0 6px;">New Patient Registration</h1>
+    <p style="font-size:13.5px;color:#8a6a4f;margin:0 0 4px;line-height:1.5;">
+      Please fill this in on your own phone or our clinic tablet — it takes about 2 minutes.
+    </p>
+    <p style="font-size:13.5px;color:#8a6a4f;margin:0;line-height:1.5;">
+      Need help, or filling this in for someone elderly? Just hand this to our front-desk staff — they'll complete it with you.
+    </p>
+
+    {% for message in messages %}<div class="form-error">{{ message }}</div>{% endfor %}
+    {% for error in form.non_field_errors %}<div class="form-error">{{ error }}</div>{% endfor %}
+
+    <form method="post" id="selfreg-form" novalidate>
+      {% csrf_token %}
+      <input type="text" name="website" value="" autocomplete="off" tabindex="-1"
+             style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
+
+      <div class="section-head"><span class="section-num">1</span><span class="section-title">Personal details</span></div>
+      <div class="row">
+        <div class="field" style="max-width:96px">
+          <label for="{{ form.title.id_for_label }}">Title</label>
+          {{ form.title }}
+        </div>
+        <div class="field">
+          <label for="{{ form.full_name.id_for_label }}">Full name</label>
+          {{ form.full_name }}
+          {% if form.full_name.errors %}<div class="field-error">{{ form.full_name.errors|striptags }}</div>{% endif %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="{{ form.date_of_birth.id_for_label }}">Date of birth</label>{{ form.date_of_birth }}</div>
+        <div class="field"><label for="{{ form.age_years.id_for_label }}">Age (if DOB unknown)</label>{{ form.age_years }}</div>
+      </div>
+      <div class="field">
+        <label>Gender</label>
+        <div class="chip-row">
+          {% for radio in form.gender %}
+            <span>{{ radio.tag }}<label for="{{ radio.id_for_label }}" class="chip">{{ radio.choice_label }}</label></span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="field"><label for="{{ form.nationality.id_for_label }}">Nationality</label>{{ form.nationality }}</div>
+      <div class="field">
+        <label for="{{ form.phone.id_for_label }}">Phone</label>
+        <div style="display:flex;gap:8px;">
+          <div style="width:112px;flex-shrink:0;">{{ form.country_code }}</div>
+          <div style="flex:1;min-width:0;">{{ form.phone }}</div>
+        </div>
+        {% if form.phone.errors %}<div class="field-error">{{ form.phone.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="field"><label for="{{ form.email.id_for_label }}">Email</label>{{ form.email }}</div>
+      <div class="field"><label for="{{ form.emergency_contact.id_for_label }}">Emergency contact</label>{{ form.emergency_contact }}</div>
+
+      <div class="section-head"><span class="section-num">2</span><span class="section-title">Address</span></div>
+      <div class="field"><label for="{{ form.address.id_for_label }}">Address</label>{{ form.address }}</div>
+      <div class="row">
+        <div class="field"><label for="{{ form.area.id_for_label }}">Area</label>{{ form.area }}</div>
+        <div class="field"><label for="{{ form.city.id_for_label }}">City</label>{{ form.city }}</div>
+      </div>
+      <div class="field" style="max-width:160px"><label for="{{ form.pin_code.id_for_label }}">Pin code</label>{{ form.pin_code }}</div>
+
+      <div class="section-head"><span class="section-num">3</span><span class="section-title">Dental history</span></div>
+      <div class="field"><label for="{{ form.chief_complaint.id_for_label }}">Chief dental complaint</label>{{ form.chief_complaint }}</div>
+      <div class="field">
+        <label>Dental "fear" or "phobia"?</label>
+        <div class="chip-row">
+          {% for radio in form.has_dental_fear %}
+            <span>{{ radio.tag }}<label for="{{ radio.id_for_label }}" class="chip">{{ radio.choice_label }}</label></span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="section-head"><span class="section-num">4</span><span class="section-title">Referral information</span></div>
+      <div class="field">
+        <label>How did you hear about us?</label>
+        <div class="chip-row">
+          {% for radio in form.referral_source %}
+            <span>{{ radio.tag }}<label for="{{ radio.id_for_label }}" class="chip">{{ radio.choice_label }}</label></span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="field"><label for="{{ form.referral_detail.id_for_label }}">Reference / other (name)</label>{{ form.referral_detail }}</div>
+      <div class="field" style="max-width:220px"><label for="{{ form.corporate_referral.id_for_label }}">Corporate referral</label>{{ form.corporate_referral }}</div>
+
+      <div class="section-head"><span class="section-num">5</span><span class="section-title">Medical history</span></div>
+      <p style="font-size:13px;color:#8a6a4f;margin:-6px 0 10px;">Tick any that apply.</p>
+      <div class="mh-grid">
+        {% for condition in medical_conditions %}
+        <div>
+          <label class="mh-item">
+            <input type="checkbox" name="mh_{{ condition.pk }}" {% if condition.pk in checked_condition_ids %}checked{% endif %}>
+            <span>{{ condition.name }}</span>
+          </label>
+          {% with subs=condition.sub_item_list %}
+          {% if subs %}
+          <div class="mh-subs">
+            {% for sub in subs %}
+            <label class="mh-sub-item">
+              <input type="checkbox" name="mh_{{ condition.pk }}_subs" value="{{ sub }}">
+              <span>{{ sub }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% endwith %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="field"><label for="{{ form.current_medications.id_for_label }}">Current medications</label>{{ form.current_medications }}</div>
+      <div class="field"><label for="{{ form.medical_history.id_for_label }}">Other medical history notes</label>{{ form.medical_history }}</div>
+
+      <div class="section-head"><span class="section-num">6</span><span class="section-title">Drug allergies</span></div>
+      <div class="field">
+        <label>Do you have drug allergies?</label>
+        <div class="chip-row">
+          {% for radio in form.has_drug_allergy %}
+            <span>{{ radio.tag }}<label for="{{ radio.id_for_label }}" class="chip">{{ radio.choice_label }}</label></span>
+          {% endfor %}
+        </div>
+      </div>
+      <div id="drug-allergy-detail" style="display:none">
+        <div class="field" style="max-width:300px">
+          <label for="{{ form.drug_allergy_detail.id_for_label }}">Allergic to</label>
+          {{ form.drug_allergy_detail }}
+        </div>
+        <p style="font-size:13px;color:#8a6a4f;margin:-6px 0 10px;">Allergic symptoms:</p>
+        <div class="mh-grid">
+          {% for symptom in drug_allergy_symptoms %}
+          <label class="mh-item">
+            <input type="checkbox" name="da_{{ symptom.pk }}" {% if symptom.pk in checked_symptom_ids %}checked{% endif %}>
+            <span>{{ symptom.name }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="section-head"><span class="section-num">7</span><span class="section-title">Consent</span></div>
+      <div class="field">
+        <label>Patient signature</label>
+        <div class="sig-pad" id="sig-pad">
+          <div class="sig-placeholder" id="sig-placeholder">Sign here with your finger or stylus</div>
+          <canvas id="sig-canvas"></canvas>
+        </div>
+        <button type="button" class="link-btn" id="sig-clear">Clear signature</button>
+        <input type="hidden" name="signature_data" id="signature_data">
+      </div>
+
+      <label class="consent-box">
+        {{ form.consent_given }}
+        <span style="font-size:13.5px;line-height:1.5;">I confirm the information above has been accurately answered to the best of my knowledge.</span>
+      </label>
+      {% if form.consent_given.errors %}<div class="field-error">{{ form.consent_given.errors|striptags }}</div>{% endif %}
+
+      <button type="submit" class="submit-btn">Submit Registration</button>
+      <p class="assist-note">By submitting, our front-desk team will verify your details and assign your patient ID.</p>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  var detail = document.getElementById("drug-allergy-detail");
+  function syncAllergy() {
+    var checked = document.querySelector('input[name="has_drug_allergy"]:checked');
+    detail.style.display = checked && checked.value === "True" ? "block" : "none";
+  }
+  document.querySelectorAll('input[name="has_drug_allergy"]').forEach(function (r) {
+    r.addEventListener("change", syncAllergy);
+  });
+  syncAllergy();
+
+  var pad = document.getElementById("sig-pad");
+  var canvas = document.getElementById("sig-canvas");
+  var placeholder = document.getElementById("sig-placeholder");
+  var hiddenInput = document.getElementById("signature_data");
+  var ctx = canvas.getContext("2d");
+  var drawing = false;
+  var hasInk = false;
+
+  function resizeCanvas() {
+    var rect = pad.getBoundingClientRect();
+    var ratio = window.devicePixelRatio || 1;
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
+    ctx.scale(ratio, ratio);
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#1c1917";
+  }
+  resizeCanvas();
+
+  function pointFromEvent(e) {
+    var rect = canvas.getBoundingClientRect();
+    return [e.clientX - rect.left, e.clientY - rect.top];
+  }
+
+  function start(e) {
+    drawing = true;
+    hasInk = true;
+    placeholder.style.display = "none";
+    var p = pointFromEvent(e);
+    ctx.beginPath();
+    ctx.moveTo(p[0], p[1]);
+  }
+  function move(e) {
+    if (!drawing) return;
+    var p = pointFromEvent(e);
+    ctx.lineTo(p[0], p[1]);
+    ctx.stroke();
+  }
+  function end() {
+    if (!drawing) return;
+    drawing = false;
+  }
+
+  pad.addEventListener("pointerdown", start);
+  pad.addEventListener("pointermove", move);
+  pad.addEventListener("pointerup", end);
+  pad.addEventListener("pointerleave", end);
+
+  document.getElementById("sig-clear").addEventListener("click", function () {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    hasInk = false;
+    placeholder.style.display = "flex";
+  });
+
+  document.getElementById("selfreg-form").addEventListener("submit", function (e) {
+    if (!hasInk) {
+      e.preventDefault();
+      alert("Please sign before submitting.");
+      return;
+    }
+    hiddenInput.value = canvas.toDataURL("image/png");
+  });
+})();
+</script>
+</body>
+</html>

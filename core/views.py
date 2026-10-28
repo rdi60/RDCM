@@ -10,6 +10,8 @@ from django.urls import reverse
 from django_otp import login as otp_login
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+from scheduling.models import SelfRegistration
+
 from .forms import TOTPTokenForm
 
 # Modules land here phase by phase (see the project roadmap). Marking a module
@@ -51,7 +53,33 @@ def home(request):
             module["url"] = reverse(module["url_name"])
         modules.append(module)
 
-    return render(request, "core/home.html", {"modules": modules, "setup_links": setup_links})
+    pending_self_registrations = None
+    if request.user.has_perm("scheduling.add_patient"):
+        pending_self_registrations = SelfRegistration.objects.filter(
+            status=SelfRegistration.Status.PENDING
+        ).count()
+        modules.append(
+            {
+                "name": "Patient self sign-ups",
+                "available": True,
+                "url": reverse("self_registration_list"),
+                "status_label": (
+                    f"{pending_self_registrations} awaiting review"
+                    if pending_self_registrations
+                    else "All caught up"
+                ),
+            }
+        )
+
+    return render(
+        request,
+        "core/home.html",
+        {
+            "modules": modules,
+            "setup_links": setup_links,
+            "pending_self_registrations": pending_self_registrations,
+        },
+    )
 
 
 @login_required
