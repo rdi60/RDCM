@@ -31,6 +31,22 @@ SOFTWARE.
 
 ---
 
+The `impeccable` skill (and its `.claude/agents/impeccable-*.md` sub-agents)
+is vendored from [pbakaus/impeccable](https://github.com/pbakaus/impeccable)
+by Paul Bakaus, licensed under Apache-2.0. Its `.claude/settings.json`
+auto-run hook (which would execute a downloaded engine binary after every
+Edit/Write and at session end) was intentionally NOT installed — only the
+skill, reference docs, and agents, so the detector/commands (`/impeccable
+polish`, `audit`, `critique`, etc.) run only when explicitly invoked. The
+skill's own launcher script still downloads a checksum-verified platform
+binary from GitHub releases on first explicit invocation; see
+https://impeccable.style/docs/hooks to opt into the automatic hook later.
+
+Apache License 2.0 — see https://github.com/pbakaus/impeccable/blob/main/LICENSE
+for the full text; copyright Paul Bakaus.
+
+---
+
 The skills `animate`, `animate-expo`, `animation-performance`,
 `animation-vocabulary`, `apple-design`, `ask-sonner`, `break-ui`,
 `emil-design-eng`, `find-animation-opportunities`, `improve-animations`,
