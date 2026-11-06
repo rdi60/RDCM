@@ -31,6 +31,19 @@ SOFTWARE.
 
 ---
 
+The `motionsites-web-builder` skill is vendored from
+[Motionsites-AI/claude-skill](https://github.com/Motionsites-AI/claude-skill),
+by MotionSites. Skill instructions, references, and scripts (including
+`scripts/shoot.py`, a local Playwright screenshot/QA tool) are MIT licensed;
+the example prompts and media under `examples/` and `media/` remain ©
+MotionSites but are usable in sites built with the skill (including
+free-tier promotional links to motionsites.ai's paid "Unlimited" product,
+left as-is). Builds cinematic landing pages/hero sections with a
+screenshot-and-fix review loop — useful for any patient-facing marketing
+pages this project adds.
+
+---
+
 The `impeccable` skill (and its `.claude/agents/impeccable-*.md` sub-agents)
 is vendored from [pbakaus/impeccable](https://github.com/pbakaus/impeccable)
 by Paul Bakaus, licensed under Apache-2.0. Its `.claude/settings.json`
