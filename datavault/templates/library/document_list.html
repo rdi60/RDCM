@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Browse · DataVault{% endblock %}
+{% block content %}
+<div class="browse-layout">
+  <aside class="sidebar">
+    <form method="get" class="search-box">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search title, description, tags…">
+      {% if topic_slug %}<input type="hidden" name="topic" value="{{ topic_slug }}">{% endif %}
+      {% if subtopic_slug %}<input type="hidden" name="subtopic" value="{{ subtopic_slug }}">{% endif %}
+      {% if tag_slug %}<input type="hidden" name="tag" value="{{ tag_slug }}">{% endif %}
+      {% if year %}<input type="hidden" name="year" value="{{ year }}">{% endif %}
+      {% if month %}<input type="hidden" name="month" value="{{ month }}">{% endif %}
+      {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+      <button type="submit" class="btn">Search</button>
+    </form>
+
+    {% if saved_filters %}
+    <div class="sidebar-section">
+      <h3>Saved views</h3>
+      <ul class="facet-list">
+        {% for sf in saved_filters %}
+        <li>
+          <a href="{% url 'library:document_list' %}?{{ sf.query_string }}">{{ sf.name }}</a>
+          <form method="post" action="{% url 'library:saved_filter_delete' sf.pk %}" class="inline-form">
+            {% csrf_token %}<button type="submit" class="btn-link small" title="Delete">✕</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="sidebar-section">
+      <h3>Topic &amp; Subtopic</h3>
+      <ul class="facet-list tree">
+        <li><a href="?{{ querystring }}" class="{% if not topic_slug %}active{% endif %}">All topics</a></li>
+        {% for topic in sidebar_topics %}
+        <li>
+          <a href="?topic={{ topic.slug }}" class="{% if topic_slug == topic.slug %}active{% endif %}">
+            <span class="dot" style="background:{{ topic.color }}"></span>{{ topic.name }}
+            <span class="facet-count">{{ topic.doc_count }}</span>
+          </a>
+          {% if topic.sub_list %}
+          <ul class="tree-children">
+            {% for sub in topic.sub_list %}
+            <li><a href="?topic={{ topic.slug }}&subtopic={{ sub.slug }}" class="{% if subtopic_slug == sub.slug %}active{% endif %}">{{ sub.name }}<span class="facet-count">{{ sub.doc_count }}</span></a></li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Year &amp; Month</h3>
+      <ul class="facet-list tree">
+        {% for yr, months in sidebar_years %}
+        <li>
+          <a href="?year={{ yr }}" class="{% if year == yr|stringformat:'s' %}active{% endif %}">{{ yr }}</a>
+          <ul class="tree-children">
+            {% for m in months %}
+            <li><a href="?year={{ yr }}&month={{ m.month }}" class="{% if month == m.month|stringformat:'s' %}active{% endif %}">{{ m.month_name }}<span class="facet-count">{{ m.count }}</span></a></li>
+            {% endfor %}
+          </ul>
+        </li>
+        {% empty %}<li class="muted">No dated files yet.</li>{% endfor %}
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>File type</h3>
+      <ul class="facet-list">
+        {% for cat in sidebar_categories %}
+        <li><a href="?category={{ cat.file_category }}" class="{% if category == cat.file_category %}active{% endif %}">{{ cat.file_category|title }}<span class="facet-count">{{ cat.count }}</span></a></li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    {% if sidebar_tags %}
+    <div class="sidebar-section">
+      <h3>Tags</h3>
+      <div class="tag-cloud">
+        {% for tag in sidebar_tags %}
+        <a href="?tag={{ tag.slug }}" class="tag-chip {% if tag_slug == tag.slug %}active{% endif %}">{{ tag.name }} <span class="facet-count">{{ tag.doc_count }}</span></a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </aside>
+
+  <section class="results">
+    <div class="results-header">
+      <div class="active-filters">
+        {% if topic_slug or subtopic_slug or tag_slug or year or month or category or q %}
+          <span class="muted">Filtered —</span>
+          <a href="{% url 'library:document_list' %}" class="btn-link">clear all</a>
+        {% else %}
+          <span class="muted">All files</span>
+        {% endif %}
+      </div>
+      <div class="results-actions">
+        <form method="get" class="inline-form">
+          {% for key, value in request.GET.items %}{% if key != 'view' and key != 'sort' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+          <select name="sort" onchange="this.form.submit()">
+            <option value="-document_date" {% if sort == '-document_date' %}selected{% endif %}>Newest first</option>
+            <option value="document_date" {% if sort == 'document_date' %}selected{% endif %}>Oldest first</option>
+            <option value="title" {% if sort == 'title' %}selected{% endif %}>Title A–Z</option>
+            <option value="-file_size" {% if sort == '-file_size' %}selected{% endif %}>Largest first</option>
+          </select>
+          <input type="hidden" name="view" value="{{ view_mode }}">
+        </form>
+        <a href="?{{ querystring }}&view=grid" class="btn {% if view_mode == 'grid' %}btn-active{% endif %}">Grid</a>
+        <a href="?{{ querystring }}&view=list" class="btn {% if view_mode == 'list' %}btn-active{% endif %}">List</a>
+        <button type="button" class="btn" onclick="document.getElementById('save-view-form').classList.toggle('visible')">Save view</button>
+      </div>
+    </div>
+
+    <form id="save-view-form" method="post" action="{% url 'library:saved_filter_create' %}" class="save-view-form">
+      {% csrf_token %}
+      <input type="hidden" name="query_string" value="{{ querystring }}">
+      <input type="text" name="name" placeholder="Name this view…" required>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+
+    {% if view_mode == 'grid' %}
+    <div class="doc-grid">
+      {% for doc in documents %}
+      <a href="{{ doc.get_absolute_url }}" class="doc-card">
+        <div class="doc-thumb doc-thumb-{{ doc.file_category }}">
+          {% if doc.is_previewable_image %}
+            <img src="{{ doc.file.url }}" alt="">
+          {% else %}
+            <span class="doc-icon">{% if doc.file_category == 'video' %}🎬{% elif doc.file_category == 'pdf' %}📄{% elif doc.file_category == 'presentation' %}📊{% elif doc.file_category == 'spreadsheet' %}📈{% elif doc.file_category == 'document' %}📝{% else %}📁{% endif %}</span>
+          {% endif %}
+        </div>
+        <div class="doc-info">
+          <span class="doc-title">{{ doc.title }}</span>
+          <span class="doc-meta">{% if doc.topic %}<span class="dot" style="background:{{ doc.topic.color }}"></span>{{ doc.topic.name }}{% endif %} · {{ doc.document_date }}</span>
+        </div>
+      </a>
+      {% empty %}
+      <p class="muted">No files match. <a href="{% url 'library:document_upload' %}">Upload some</a> or clear the filters.</p>
+      {% endfor %}
+    </div>
+    {% else %}
+    <table class="simple-table doc-table">
+      <thead><tr><th></th><th>Title</th><th>Topic / Subtopic</th><th>Tags</th><th>Type</th><th>Date</th></tr></thead>
+      <tbody>
+      {% for doc in documents %}
+        <tr>
+          <td class="doc-table-icon">{% if doc.is_previewable_image %}<img src="{{ doc.file.url }}" alt="">{% else %}📁{% endif %}</td>
+          <td><a href="{{ doc.get_absolute_url }}">{{ doc.title }}</a></td>
+          <td>{% if doc.topic %}{{ doc.topic.name }}{% if doc.subtopic %} / {{ doc.subtopic.name }}{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
+          <td>{% for t in doc.tags.all %}<span class="tag-chip">{{ t.name }}</span>{% endfor %}</td>
+          <td>{{ doc.get_file_category_display }}</td>
+          <td>{{ doc.document_date }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="muted">No files match.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}<a href="?{{ querystring }}&page={{ page_obj.previous_page_number }}">&laquo; Prev</a>{% endif %}
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a href="?{{ querystring }}&page={{ page_obj.next_page_number }}">Next &raquo;</a>{% endif %}
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

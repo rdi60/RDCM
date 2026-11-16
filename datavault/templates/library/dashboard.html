@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · DataVault{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <a href="{% url 'library:document_upload' %}" class="btn btn-primary">+ Upload files</a>
+</div>
+
+<div class="stat-grid">
+  <a href="{% url 'library:document_list' %}" class="stat-card">
+    <span class="stat-number">{{ total }}</span>
+    <span class="stat-label">Total files</span>
+  </a>
+  <a href="{% url 'library:document_list' %}?topic=" class="stat-card">
+    <span class="stat-number">{{ untagged }}</span>
+    <span class="stat-label">Without a topic</span>
+  </a>
+  <a href="{% url 'library:duplicates' %}" class="stat-card {% if duplicate_count %}stat-warning{% endif %}">
+    <span class="stat-number">{{ duplicate_count }}</span>
+    <span class="stat-label">Possible duplicates</span>
+  </a>
+  <a href="{% url 'library:topic_list' %}" class="stat-card">
+    <span class="stat-number">{{ topic_count }}</span>
+    <span class="stat-label">Topics</span>
+  </a>
+  <a href="{% url 'library:tag_list' %}" class="stat-card">
+    <span class="stat-number">{{ tag_count }}</span>
+    <span class="stat-label">Tags</span>
+  </a>
+</div>
+
+<div class="dashboard-columns">
+  <section class="panel">
+    <h2>By file type</h2>
+    <ul class="bar-list">
+      {% for row in by_category %}
+      <li>
+        <a href="{% url 'library:document_list' %}?category={{ row.file_category }}">{{ row.file_category|title }}</a>
+        <span class="bar-count">{{ row.count }}</span>
+      </li>
+      {% empty %}<li class="muted">No files yet.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>Top topics</h2>
+    <ul class="bar-list">
+      {% for topic in by_topic %}
+      <li>
+        <a href="{% url 'library:document_list' %}?topic={{ topic.slug }}">
+          <span class="dot" style="background:{{ topic.color }}"></span>{{ topic.name }}
+        </a>
+        <span class="bar-count">{{ topic.doc_count }}</span>
+      </li>
+      {% empty %}<li class="muted">No topics yet — <a href="{% url 'library:topic_list' %}">create one</a>.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+
+<section class="panel">
+  <h2>Recently added</h2>
+  <table class="simple-table">
+    <thead><tr><th>Title</th><th>Topic</th><th>Type</th><th>Date</th></tr></thead>
+    <tbody>
+    {% for doc in recent %}
+      <tr>
+        <td><a href="{{ doc.get_absolute_url }}">{{ doc.title }}</a></td>
+        <td>{% if doc.topic %}{{ doc.topic.name }}{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td>{{ doc.get_file_category_display }}</td>
+        <td>{{ doc.document_date }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4" class="muted">Nothing uploaded yet. <a href="{% url 'library:document_upload' %}">Upload your first file</a>.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

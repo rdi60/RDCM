@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ document.title }} · DataVault{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ document.title }}</h1>
+  <div>
+    <a href="{% url 'library:document_edit' document.pk %}" class="btn">Edit</a>
+    <form method="post" action="{% url 'library:document_delete' document.pk %}" class="inline-form" onsubmit="return confirm('Delete this file permanently?');">
+      {% csrf_token %}<button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="detail-layout">
+  <div class="panel preview-panel">
+    {% if document.is_previewable_image %}
+      <img src="{{ document.file.url }}" alt="{{ document.title }}" class="preview-media">
+    {% elif document.is_previewable_video %}
+      <video src="{{ document.file.url }}" controls class="preview-media"></video>
+    {% elif document.is_previewable_pdf %}
+      <embed src="{{ document.file.url }}" type="application/pdf" class="preview-pdf">
+    {% else %}
+      <div class="preview-placeholder">
+        <span class="doc-icon-large">📁</span>
+        <p>No inline preview for this file type.</p>
+      </div>
+    {% endif %}
+    <a href="{{ document.file.url }}" download="{{ document.original_filename }}" class="btn btn-block">Download “{{ document.original_filename }}”</a>
+  </div>
+
+  <div class="panel detail-meta">
+    <dl>
+      <dt>Topic</dt>
+      <dd>{% if document.topic %}<span class="dot" style="background:{{ document.topic.color }}"></span>{{ document.topic.name }}{% if document.subtopic %} / {{ document.subtopic.name }}{% endif %}{% else %}<span class="muted">Unfiled — <a href="{% url 'library:document_edit' document.pk %}">assign one</a></span>{% endif %}</dd>
+
+      <dt>Date</dt>
+      <dd>{{ document.document_date }} ({{ document.document_date|date:"F Y" }})</dd>
+
+      <dt>Type</dt>
+      <dd>{{ document.get_file_category_display }} · {{ document.extension|upper }} · {{ document.file_size|filesizeformat }}</dd>
+
+      <dt>Tags</dt>
+      <dd>
+        {% for tag in document.tags.all %}<a href="{% url 'library:document_list' %}?tag={{ tag.slug }}" class="tag-chip">{{ tag.name }}</a>{% empty %}<span class="muted">No tags</span>{% endfor %}
+      </dd>
+
+      {% if document.description %}
+      <dt>Description</dt>
+      <dd>{{ document.description|linebreaksbr }}</dd>
+      {% endif %}
+
+      <dt>Uploaded</dt>
+      <dd>{{ document.created_at|date:"d M Y, H:i" }}{% if document.uploaded_by %} by {{ document.uploaded_by }}{% endif %}</dd>
+    </dl>
+
+    {% if applicable_fields %}
+    <h3>Custom fields</h3>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="save_fields">
+      <dl>
+      {% for field in applicable_fields %}
+        <dt>{{ field.name }}</dt>
+        <dd>
+          {% if field.field_type == 'choice' %}
+            <select name="field_{{ field.id }}">
+              <option value="">—</option>
+              {% for choice in field.get_choice_list %}<option value="{{ choice }}" {% if field.current_value == choice %}selected{% endif %}>{{ choice }}</option>{% endfor %}
+            </select>
+          {% elif field.field_type == 'boolean' %}
+            <select name="field_{{ field.id }}">
+              <option value="">—</option>
+              <option value="Yes" {% if field.current_value == "Yes" %}selected{% endif %}>Yes</option>
+              <option value="No" {% if field.current_value == "No" %}selected{% endif %}>No</option>
+            </select>
+          {% elif field.field_type == 'date' %}
+            <input type="date" name="field_{{ field.id }}" value="{{ field.current_value }}">
+          {% elif field.field_type == 'number' %}
+            <input type="number" step="any" name="field_{{ field.id }}" value="{{ field.current_value }}">
+          {% else %}
+            <input type="text" name="field_{{ field.id }}" value="{{ field.current_value }}">
+          {% endif %}
+        </dd>
+      {% endfor %}
+      </dl>
+      <button type="submit" class="btn btn-primary">Save custom fields</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

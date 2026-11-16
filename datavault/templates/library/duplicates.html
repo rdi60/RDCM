@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Duplicates · DataVault{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Possible duplicates</h1>
+</div>
+<p class="muted">Files with identical content (matched by checksum). Keep the one you want and delete the rest to clean up your library.</p>
+
+{% for group in duplicate_groups %}
+<section class="panel">
+  <h2>{{ group.count }} copies</h2>
+  <table class="simple-table">
+    <thead><tr><th></th><th>Title</th><th>Topic</th><th>Uploaded</th><th></th></tr></thead>
+    <tbody>
+    {% for doc in group.documents %}
+      <tr>
+        <td class="doc-table-icon">{% if doc.is_previewable_image %}<img src="{{ doc.file.url }}" alt="">{% else %}📁{% endif %}</td>
+        <td><a href="{{ doc.get_absolute_url }}">{{ doc.title }}</a></td>
+        <td>{% if doc.topic %}{{ doc.topic.name }}{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td>{{ doc.created_at|date:"d M Y" }}</td>
+        <td>
+          <form method="post" action="{% url 'library:document_delete' doc.pk %}" class="inline-form" onsubmit="return confirm('Delete this copy?');">
+            {% csrf_token %}<button type="submit" class="btn-link">Delete this copy</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% empty %}
+<p class="muted">No duplicates found. Your library is clean! 🎉</p>
+{% endfor %}
+{% endblock %}

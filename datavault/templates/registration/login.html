@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Sign in · DataVault{% endblock %}
+{% block auth_content %}
+<div class="login-screen">
+  <form method="post" class="login-card">
+    {% csrf_token %}
+    <h1>🗂️ DataVault</h1>
+    <p class="muted">Sign in to organise your files.</p>
+    {% if form.errors %}<p class="error">Incorrect username or password.</p>{% endif %}
+    <label>Username</label>
+    {{ form.username }}
+    <label>Password</label>
+    {{ form.password }}
+    <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+  </form>
+</div>
+{% endblock %}

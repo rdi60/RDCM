@@ -1,0 +1,4 @@
+<option value="">(no subtopic)</option>
+{% for sub in subtopics %}
+<option value="{{ sub.pk }}">{{ sub.name }}</option>
+{% endfor %}

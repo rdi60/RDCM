@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Tags · DataVault{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Tags</h1></div>
+<div class="form-layout">
+  <section class="panel">
+    <div class="tag-cloud">
+      {% for tag in tags %}
+      <span class="tag-chip">
+        <a href="{% url 'library:document_list' %}?tag={{ tag.slug }}">{{ tag.name }} ({{ tag.doc_count }})</a>
+        <form method="post" action="{% url 'library:tag_delete' tag.pk %}" class="inline-form" onsubmit="return confirm('Delete this tag?');">
+          {% csrf_token %}<button type="submit" class="btn-link small">✕</button>
+        </form>
+      </span>
+      {% empty %}<p class="muted">No tags yet. Add them from any file's edit page, or here.</p>{% endfor %}
+    </div>
+  </section>
+  <section class="panel form-panel">
+    <h2>New tag</h2>
+    <form method="post">
+      {% csrf_token %}
+      <label>Name</label>
+      {{ form.name }}
+      <button type="submit" class="btn btn-primary">Create tag</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

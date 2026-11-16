@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'upload' %}Upload{% else %}Edit{% endif %} · DataVault{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{% if mode == 'upload' %}Upload files{% else %}Edit “{{ document.title }}”{% endif %}</h1>
+</div>
+
+<div class="form-layout">
+  <form method="post" enctype="multipart/form-data" class="panel form-panel">
+    {% csrf_token %}
+
+    {% if mode == 'edit' %}
+      <label>Title</label>
+      {{ form.title }}
+    {% else %}
+      <label>Files {% if mode == 'upload' %}<span class="muted">(select one or many — the metadata below is applied to all of them)</span>{% endif %}</label>
+      {{ form.files }}
+    {% endif %}
+
+    <label>Description</label>
+    {{ form.description }}
+
+    <div class="form-row">
+      <div>
+        <label>Topic</label>
+        {{ form.topic }}
+      </div>
+      <div>
+        <label>Subtopic</label>
+        {{ form.subtopic }}
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>
+        <label>{{ form.document_date.label }}</label>
+        {{ form.document_date }}
+      </div>
+      <div>
+        <label>Tags</label>
+        {{ form.tags }}
+      </div>
+    </div>
+
+    {% if mode == 'edit' %}
+      <label>Replace file <span class="muted">(optional — leave blank to keep the current one)</span></label>
+      {{ form.replacement_file }}
+      <p class="muted">Current file: <a href="{{ document.file.url }}" target="_blank">{{ document.original_filename }}</a></p>
+    {% endif %}
+
+    {% if form.errors %}<div class="error">Please check the fields above.</div>{% endif %}
+
+    <button type="submit" class="btn btn-primary">{% if mode == 'upload' %}Upload{% else %}Save changes{% endif %}</button>
+    {% if mode == 'edit' %}<a href="{{ document.get_absolute_url }}" class="btn">Cancel</a>{% endif %}
+  </form>
+
+  {% if mode == 'edit' and applicable_fields %}
+  <form method="post" class="panel form-panel">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save_fields">
+    <h2>Custom fields</h2>
+    {% for field in applicable_fields %}
+      <label>{{ field.name }}{% if field.required %} *{% endif %}</label>
+      {% if field.field_type == 'choice' %}
+        <select name="field_{{ field.id }}">
+          <option value="">—</option>
+          {% for choice in field.get_choice_list %}
+            <option value="{{ choice }}" {% if field.current_value == choice %}selected{% endif %}>{{ choice }}</option>
+          {% endfor %}
+        </select>
+      {% elif field.field_type == 'boolean' %}
+        <select name="field_{{ field.id }}">
+          <option value="">—</option>
+          <option value="Yes" {% if field.current_value == "Yes" %}selected{% endif %}>Yes</option>
+          <option value="No" {% if field.current_value == "No" %}selected{% endif %}>No</option>
+        </select>
+      {% elif field.field_type == 'date' %}
+        <input type="date" name="field_{{ field.id }}" value="{{ field.current_value }}">
+      {% elif field.field_type == 'number' %}
+        <input type="number" step="any" name="field_{{ field.id }}" value="{{ field.current_value }}">
+      {% else %}
+        <input type="text" name="field_{{ field.id }}" value="{{ field.current_value }}">
+      {% endif %}
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Save custom fields</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

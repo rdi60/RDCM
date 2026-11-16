@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Topics · DataVault{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Topics &amp; Subtopics</h1></div>
+<p class="muted">Create your own topics and nested subtopics to organise files however makes sense to you.</p>
+
+<div class="form-layout">
+  <section class="panel">
+    {% for topic in topics %}
+    <div class="topic-row">
+      <div class="topic-row-head">
+        <span class="dot" style="background:{{ topic.color }}"></span>
+        <strong>{{ topic.name }}</strong>
+        <span class="muted">({{ topic.doc_count }} files)</span>
+        <div class="topic-row-actions">
+          <a href="{% url 'library:topic_edit' topic.pk %}" class="btn-link">Edit</a>
+          <form method="post" action="{% url 'library:topic_delete' topic.pk %}" class="inline-form" onsubmit="return confirm('Delete this topic? Its files will become unfiled.');">
+            {% csrf_token %}<button type="submit" class="btn-link">Delete</button>
+          </form>
+        </div>
+      </div>
+      <ul class="subtopic-chip-list">
+        {% for sub in topic.subtopics.all %}
+        <li class="tag-chip">
+          {{ sub.name }}
+          <form method="post" action="{% url 'library:subtopic_delete' sub.pk %}" class="inline-form" onsubmit="return confirm('Delete this subtopic?');">
+            {% csrf_token %}<button type="submit" class="btn-link small">✕</button>
+          </form>
+        </li>
+        {% endfor %}
+        <li>
+          <form method="post" action="{% url 'library:subtopic_add' topic.pk %}" class="inline-form">
+            {% csrf_token %}
+            <input type="text" name="name" placeholder="+ add subtopic" class="small-input">
+            <button type="submit" class="btn-link">Add</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+    {% empty %}
+    <p class="muted">No topics yet — create your first one.</p>
+    {% endfor %}
+  </section>
+
+  <section class="panel form-panel">
+    <h2>New topic</h2>
+    <form method="post">
+      {% csrf_token %}
+      <label>Name</label>
+      {{ form.name }}
+      <label>Description</label>
+      {{ form.description }}
+      <div class="form-row">
+        <div><label>Colour</label>{{ form.color }}</div>
+        <div><label>Order</label>{{ form.order }}</div>
+      </div>
+      <button type="submit" class="btn btn-primary">Create topic</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
